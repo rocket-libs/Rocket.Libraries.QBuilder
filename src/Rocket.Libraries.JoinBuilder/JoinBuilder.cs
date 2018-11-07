@@ -67,6 +67,20 @@
             return this;
         }
 
+        public JoinBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
+        {
+            var criteria = GetWhereInSectionArguments(values);
+
+            if (string.IsNullOrEmpty(criteria))
+            {
+                return this;
+            }
+            else
+            {
+                return Where<TTable>(field, $" in {criteria}");
+            }
+        }
+
         public JoinBuilder WhereExplicitly(string criteria)
         {
             _wheres.Add(new WhereDescription
@@ -197,6 +211,25 @@
             var occurenceCount = _joins.Count(a => a.LeftTable.Equals(table, StringComparison.CurrentCultureIgnoreCase)
             || a.RightTable.Equals(table, StringComparison.CurrentCultureIgnoreCase));
             return occurenceCount == 0;
+        }
+
+        private string GetWhereInSectionArguments<TValueType>(List<TValueType> values)
+        {
+            if (values == null)
+            {
+                throw new Exception("Cannot build a where clause from an null list of values");
+            }
+            if (values.Count == 0)
+            {
+                return string.Empty;
+            }
+            var args = string.Empty;
+            foreach (var value in values)
+            {
+                args += $",'{value}'";
+            }
+            args = $"({args.Substring(1)})";
+            return args;
         }
     }
 }
