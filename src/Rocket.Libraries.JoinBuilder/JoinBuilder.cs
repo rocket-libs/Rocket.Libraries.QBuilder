@@ -4,17 +4,22 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Rocket.Libraries.JoinBuilder.Builders;
     using Rocket.Libraries.Validation.Services;
 
     public class JoinBuilder
     {
         private List<JoinDescription> _joins = new List<JoinDescription>();
-        private List<SelectDescription> _selects = new List<SelectDescription>();
         private List<WhereDescription> _wheres = new List<WhereDescription>();
         private TableNameAliaser _tableNameAliaser;
         private bool _distinctAllFields = false;
+        private OrderBuilder _orderBuilder;
+        private SelectBuilder _selectBuilder;
 
         private DataValidator DataValidator { get; } = new DataValidator();
+        internal TableNameAliaser TableNameAliaser { get => _tableNameAliaser; set => _tableNameAliaser = value; }
+        internal Func<Type, string> TableNameResolver { get => _tableNameResolver; set => _tableNameResolver = value; }
+        internal List<JoinDescription> Joins { get => _joins; set => _joins = value; }
 
         private Func<Type, string> _tableNameResolver;
 
@@ -26,8 +31,10 @@
 
         public JoinBuilder(Func<Type, string> tableNameResolver)
         {
-            _tableNameResolver = tableNameResolver;
-            _tableNameAliaser = new TableNameAliaser(tableNameResolver);
+            TableNameResolver = tableNameResolver;
+            TableNameAliaser = new TableNameAliaser(tableNameResolver);
+            _orderBuilder = new OrderBuilder(this);
+            _selectBuilder = new SelectBuilder(this);
         }
 
         public JoinBuilder InnerJoin<TLeftTable, TRightTable>(string leftField, string rightField)
@@ -36,33 +43,29 @@
             return this;
         }
 
+        public JoinBuilder OrderByDescending<TTable>(string field)
+        {
+            return _orderBuilder.OrderByDescending<TTable>(field);
+        }
+
+        public SelectBuilder Selector()
+        {
+            return _selectBuilder;
+        }
+
         public JoinBuilder FullJoin<TLeftTable, TRightTable>(string leftField, string rightField)
         {
             QueueJoin<TLeftTable, TRightTable>(leftField, rightField, JoinTypes.Full);
             return this;
         }
 
-        public JoinBuilder Select<TTable>(string field)
-        {
-            return Select<TTable>(field, string.Empty);
-        }
-
-        public JoinBuilder Select<TTable>(string field, string fieldAlias)
-        {
-            _selects.Add(new SelectDescription
-            {
-                Field = field,
-                Table = _tableNameResolver(typeof(TTable)),
-                FieldAlias = fieldAlias
-            });
-            return this;
-        }
+        
 
         public JoinBuilder Where<TTable>(string field, string condition)
         {
             _wheres.Add(new WhereDescription
             {
-                Clause = $"{_tableNameAliaser.GetTableAlias(_tableNameResolver(typeof(TTable)))}.{field} {condition}"
+                Clause = $"{TableNameAliaser.GetTableAlias(TableNameResolver(typeof(TTable)))}.{field} {condition}"
             });
             return this;
         }
@@ -90,31 +93,25 @@
             return this;
         }
 
-        public JoinBuilder SelectDistinctAll()
-        {
-            _distinctAllFields = true;
-            return this;
-        }
-
         public string Build()
         {
-            DataValidator.EvaluateImmediate(() => _selects.Count == 0, "There are no fields queued for selection. Nothing to return");
-            DataValidator.EvaluateImmediate(() => _joins.Count == 0, "There are no tables queued for joining. Nothing to return");
+            DataValidator.EvaluateImmediate(() => Joins.Count == 0, "There are no tables queued for joining. Nothing to return");
 
-            var query = GetSelectClause()
+            var query = _selectBuilder.Build()
                 + GetJoinClause()
-                + GetWhereClause();
+                + GetWhereClause()
+                + _orderBuilder.Build();
             return query;
         }
 
         private void QueueJoin<TLeftTable, TRightTable>(string leftField, string rightField, string joinType)
         {
-            _joins.Add(new JoinDescription
+            Joins.Add(new JoinDescription
             {
                 LeftField = leftField,
-                LeftTable = _tableNameResolver(typeof(TLeftTable)),
+                LeftTable = TableNameResolver(typeof(TLeftTable)),
                 RightField = rightField,
-                RightTable = _tableNameResolver(typeof(TRightTable)),
+                RightTable = TableNameResolver(typeof(TRightTable)),
                 JoinType = joinType,
             });
         }
@@ -142,49 +139,23 @@
             }
         }
 
-        private string GetSelectClause()
-        {
-            var selects = "Select ";
-            if (_distinctAllFields)
-            {
-                selects += $" Distinct {Environment.NewLine}";
-            }
-
-            foreach (var selectDescription in _selects)
-            {
-                DataValidator.EvaluateImmediate(() => TableNotKnown(selectDescription.Table), $"Table '{selectDescription.Table}' has not been queued as a datasource. Cannot show fields from it");
-                selects += $"{Environment.NewLine}{_tableNameAliaser.GetTableAlias(selectDescription.Table)}.{selectDescription.Field}";
-                var hasAlias = !string.IsNullOrEmpty(selectDescription.FieldAlias);
-                if (hasAlias)
-                {
-                    selects += $" as {selectDescription.FieldAlias}";
-                }
-
-                selects += ",";
-            }
-
-            selects = selects.Substring(0, selects.Length - 1) + $" From {_joins.First().RightTable} " + _tableNameAliaser.GetTableAlias(_joins.First().RightTable);
-            _selects = new List<SelectDescription>();
-            return selects + Environment.NewLine;
-        }
-
         private string GetJoinClause()
         {
             var joins = string.Empty;
-            foreach (var joinDescription in _joins)
+            foreach (var joinDescription in Joins)
             {
                 joins += GetJoinLine(joinDescription);
             }
 
-            _joins = new List<JoinDescription>();
+            Joins = new List<JoinDescription>();
             return joins;
         }
 
         private string GetJoinLine(JoinDescription joinDescription)
         {
             var joinPrefix = GetJoinPrefix(joinDescription);
-            var line = $"{joinPrefix}join {joinDescription.LeftTable} {_tableNameAliaser.GetTableAlias(joinDescription.LeftTable)} on {_tableNameAliaser.GetTableAlias(joinDescription.LeftTable)}.{joinDescription.LeftField}";
-            line += $" = {_tableNameAliaser.GetTableAlias(joinDescription.RightTable)}.{joinDescription.RightField}{Environment.NewLine}";
+            var line = $"{joinPrefix}join {joinDescription.LeftTable} {TableNameAliaser.GetTableAlias(joinDescription.LeftTable)} on {TableNameAliaser.GetTableAlias(joinDescription.LeftTable)}.{joinDescription.LeftField}";
+            line += $" = {TableNameAliaser.GetTableAlias(joinDescription.RightTable)}.{joinDescription.RightField}{Environment.NewLine}";
             return line;
         }
 
@@ -204,13 +175,6 @@
                     return string.Empty;
             }
             return string.Empty;
-        }
-
-        private bool TableNotKnown(string table)
-        {
-            var occurenceCount = _joins.Count(a => a.LeftTable.Equals(table, StringComparison.CurrentCultureIgnoreCase)
-            || a.RightTable.Equals(table, StringComparison.CurrentCultureIgnoreCase));
-            return occurenceCount == 0;
         }
 
         private string GetWhereInSectionArguments<TValueType>(List<TValueType> values)
