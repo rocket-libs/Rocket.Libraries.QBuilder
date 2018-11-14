@@ -9,11 +9,12 @@
 
     public class QBuilder
     {
-        private SelectBuilder _selectBuilder;
-        private OrderBuilder _orderBuilder;
-        private JoinBuilder _joinBuilder;
-        private WhereBuilder _whereBuilder;
+        private readonly SelectBuilder _selectBuilder;
+        private readonly OrderBuilder _orderBuilder;
+        private readonly JoinBuilder _joinBuilder;
+        private readonly WhereBuilder _whereBuilder;
         private readonly string _derivedTableName;
+        private readonly GroupBuilder _groupBuilder;
 
         public QBuilder()
             : this("t")
@@ -36,6 +37,7 @@
             _selectBuilder = new SelectBuilder(this, "t");
             _joinBuilder = new JoinBuilder(this);
             _whereBuilder = new WhereBuilder(this);
+            _groupBuilder = new GroupBuilder(this);
         }
 
         internal TableNameAliaser TableNameAliaser { get; set; }
@@ -43,8 +45,6 @@
         internal InnerSelectDescription InnerSelectDescription { get; set; }
 
         internal Func<Type, string> TableNameResolver { get; set; }
-
-        private DataValidator DataValidator { get; } = new DataValidator();
 
         internal string FirstTableName
         {
@@ -60,6 +60,8 @@
                 }
             }
         }
+
+        private DataValidator DataValidator { get; } = new DataValidator();
 
         public SelectBuilder UseSelector()
         {
@@ -81,13 +83,19 @@
             return _orderBuilder;
         }
 
+        public GroupBuilder UseGrouper()
+        {
+            return _groupBuilder;
+        }
+
         public string Build()
         {
-            //DataValidator.EvaluateImmediate(() => UseJoiner().JoinsExist == false, "There are no tables queued for joining. Nothing to return");
+            DataValidator.EvaluateImmediate(() => string.IsNullOrEmpty(FirstTableName), "There are no tables queued for data querying. Nothing to return");
 
             var query = UseSelector().Build()
                 + UseJoiner().Build()
                 + UseFilter().Build()
+                + UseGrouper().Build()
                 + UseOrdering().Build();
             var wrappedQuery = GetWrappedInSelectAlias(query);
             var finalQuery = GetWithInnerSelectJoinIfRequired(wrappedQuery);
@@ -100,7 +108,7 @@
 
             if (noInnerDescription)
             {
-                throw new Exception($"You are not in a '{nameof(JoinBuilder.JoinToDerivedTable)}' section. Did you mean to call '{nameof(JoinBuilder.Then)}' instead?");
+                throw new Exception($"You are not in a '{nameof(JoinBuilder.BeginInnerJoinToDerivedTable)}' section. Did you mean to call '{nameof(JoinBuilder.Then)}' instead?");
             }
 
             return InnerSelectDescription.Parent;

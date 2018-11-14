@@ -35,7 +35,7 @@
             return this;
         }
 
-        public SelectBuilder JoinToDerivedTable(string derivedTableName, string innerField, string field)
+        public QBuilder BeginInnerJoinToDerivedTable(string derivedTableName, string innerField, string field)
         {
             InnerSelectDescription = new InnerSelectDescription
             {
@@ -46,12 +46,12 @@
                 DerivedTableName = derivedTableName,
             };
             InnerSelectDescription.QBuilder.InnerSelectDescription = InnerSelectDescription;
-            return InnerSelectDescription.QBuilder.UseSelector();
+            return InnerSelectDescription.QBuilder;
         }
 
         public override QBuilder Then()
         {
-            DataValidator.EvaluateImmediate(() => QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(JoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
+            DataValidator.EvaluateImmediate(() => QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(BeginInnerJoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
             return base.Then();
         }
 
