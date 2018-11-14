@@ -1,31 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Rocket.Libraries.JoinBuilder.Builders
+﻿namespace Rocket.Libraries.Qurious.Builders
 {
-    public class OrderBuilder
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
+    public class OrderBuilder : BuilderBase
     {
-        private JoinBuilder JoinBuilder { get; }
-
-        internal OrderBuilder(JoinBuilder joinBuilder)
-        {
-            JoinBuilder = joinBuilder;
-        }
-
         private string _descendingField;
         private string _table;
 
-        public JoinBuilder OrderByDescending<TTable>(string field)
+        public OrderBuilder(QBuilder qBuilder)
+            : base(qBuilder)
+        {
+        }
+
+        public QBuilder OrderByDescending<TTable>(string field)
         {
             _descendingField = field;
-            _table = JoinBuilder.TableNameAliaser.GetTableAlias<TTable>();
-            return JoinBuilder;
+            _table = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
+            return QBuilder;
         }
 
         public string Build()
         {
-            if(string.IsNullOrEmpty(_descendingField))
+            if (string.IsNullOrEmpty(_descendingField))
             {
                 return string.Empty;
             }

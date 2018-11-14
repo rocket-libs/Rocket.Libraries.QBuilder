@@ -1,4 +1,4 @@
-﻿namespace Rocket.Libraries.JoinBuilder
+﻿namespace Rocket.Libraries.Qurious
 {
     using System;
     using System.Collections.Generic;
