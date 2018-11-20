@@ -35,6 +35,18 @@
             return this;
         }
 
+        public JoinBuilder LeftJoin<TLeftTable, TRightTable>(string leftField, string rightField)
+        {
+            QueueJoin<TLeftTable, TRightTable>(leftField, rightField, JoinTypes.LeftJoin);
+            return this;
+        }
+
+        public JoinBuilder RightJoin<TLeftTable, TRightTable>(string leftField, string rightField)
+        {
+            QueueJoin<TLeftTable, TRightTable>(leftField, rightField, JoinTypes.RightJoin);
+            return this;
+        }
+
         public QBuilder BeginInnerJoinToDerivedTable(string derivedTableName, string innerField, string field)
         {
             InnerSelectDescription = new InnerSelectDescription
@@ -108,6 +120,10 @@
 
                 case JoinTypes.Inner:
                     return string.Empty;
+                case JoinTypes.RightJoin:
+                    return "Right ";
+                case JoinTypes.LeftJoin:
+                    return "Left ";
             }
             return string.Empty;
         }
