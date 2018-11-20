@@ -7,28 +7,32 @@
     public class WhereBuilder : BuilderBase
     {
         private List<WhereDescription> _wheres = new List<WhereDescription>();
+        private string _nextConjuntion = "And";
+        private WhereConjuntionBuilder _whereConjunctionBuilder;
 
         public WhereBuilder(QBuilder qBuilder)
             : base(qBuilder)
         {
+            _whereConjunctionBuilder = new WhereConjuntionBuilder(this, qBuilder);
         }
 
-        public WhereBuilder Where<TTable>(string field, string condition)
+        public WhereConjuntionBuilder Where<TTable>(string field, string condition)
         {
             _wheres.Add(new WhereDescription
             {
-                Clause = $"{QBuilder.TableNameAliaser.GetTableAlias(QBuilder.TableNameResolver(typeof(TTable)))}.{field} {condition}"
+                Clause = $"{QBuilder.TableNameAliaser.GetTableAlias(QBuilder.TableNameResolver(typeof(TTable)))}.{field} {condition}",
+                Conjunction = _nextConjuntion,
             });
-            return this;
+            return _whereConjunctionBuilder;
         }
 
-        public WhereBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
+        public WhereConjuntionBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
         {
             var criteria = GetWhereInSectionArguments(values);
 
             if (string.IsNullOrEmpty(criteria))
             {
-                return this;
+                return _whereConjunctionBuilder;
             }
             else
             {
@@ -36,13 +40,19 @@
             }
         }
 
-        public WhereBuilder WhereExplicitly(string criteria)
+        public WhereConjuntionBuilder WhereExplicitly(string criteria)
         {
             _wheres.Add(new WhereDescription
             {
-                Clause = criteria
+                Clause = criteria,
+                Conjunction = _nextConjuntion,
             });
-            return this;
+            return _whereConjunctionBuilder;
+        }
+
+        internal void SetNextConjunction(string conjunction)
+        {
+            _nextConjuntion = conjunction;
         }
 
         internal string Build()
@@ -52,8 +62,9 @@
             {
                 if (!string.IsNullOrEmpty(where))
                 {
-                    where += "and ";
+                    where += $" {whereDescription.Conjunction} ";
                 }
+
                 where += $"{whereDescription.Clause}{Environment.NewLine}";
             }
 
