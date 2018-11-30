@@ -40,9 +40,9 @@
             }
         }
 
-        public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnCheck)
+        public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnIfTrue)
         {
-            if(fnCheck())
+            if (fnIfTrue())
             {
                 return Where<TTable>(field, condition);
             }
