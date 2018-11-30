@@ -40,6 +40,18 @@
             }
         }
 
+        public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnCheck)
+        {
+            if(fnCheck())
+            {
+                return Where<TTable>(field, condition);
+            }
+            else
+            {
+                return _whereConjunctionBuilder;
+            }
+        }
+
         public WhereConjuntionBuilder WhereExplicitly(string criteria)
         {
             _wheres.Add(new WhereDescription
