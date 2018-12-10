@@ -40,9 +40,31 @@
             }
         }
 
+        [Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
         public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnIfTrue)
         {
             if (fnIfTrue())
+            {
+                return Where<TTable>(field, condition);
+            }
+            else
+            {
+                return _whereConjunctionBuilder;
+            }
+        }
+
+        /// <summary>
+        /// This method only injects a where filter if the <paramref name="fnResolveCondition"/> does not resolve to String.Empty
+        /// </summary>
+        /// <typeparam name="TTable">The table to filter on</typeparam>
+        /// <param name="field">The field to filter on</param>
+        /// <param name="fnResolveCondition">A function which when executed returns either a valid SQL filter or String.Empty. If String.Empty is returned, no where filter is injected and conversely, an filter is injected if a valid SQL filter is returned</param>
+        /// <returns>Instance of <see cref="WhereConjuntionBuilder"/> to allow chaining of filter calls</returns>
+        public WhereConjuntionBuilder OptionalWhere<TTable>(string field, Func<string> fnResolveCondition)
+        {
+            var condition = fnResolveCondition();
+            var conditionExists = string.IsNullOrEmpty(condition) == false;
+            if (conditionExists)
             {
                 return Where<TTable>(field, condition);
             }

@@ -13,6 +13,7 @@ function Pack
 function Deploy
 {
     Copy-Item -Path:.\bin\Debug\*.nupkg -Destination:E:\Work\Code\Nugets
+	Copy-Item -Path:.\bin\Debug\*.nupkg -Destination:\\I27SIMBA\AutoKenya2\nugets
     "Package deployed to local nuget"
 }
 
