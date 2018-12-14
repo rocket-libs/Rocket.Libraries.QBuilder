@@ -1,9 +1,5 @@
 ﻿namespace Rocket.Libraries.Qurious.Builders
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public class WhereConjuntionBuilder : BuilderBase
     {
         private readonly WhereBuilder _whereBuilder;

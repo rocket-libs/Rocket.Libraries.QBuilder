@@ -1,8 +1,6 @@
 ﻿namespace Rocket.Libraries.Qurious
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Rocket.Libraries.Qurious.Builders;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
@@ -66,6 +64,12 @@
         public SelectBuilder UseSelector()
         {
             return _selectBuilder;
+        }
+
+        public TableBoundSelectBuilder<TTable> UseTableBoundSelector<TTable>()
+            where TTable : new()
+        {
+            return new TableBoundSelectBuilder<TTable>(this, _selectBuilder);
         }
 
         public JoinBuilder UseJoiner()

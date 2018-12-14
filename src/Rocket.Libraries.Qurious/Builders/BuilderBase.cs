@@ -1,8 +1,5 @@
 ﻿namespace Rocket.Libraries.Qurious.Builders
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Rocket.Libraries.Validation.Services;
 
     public abstract class BuilderBase

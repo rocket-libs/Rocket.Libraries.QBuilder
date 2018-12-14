@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using Rocket.Libraries.Qurious.Models;
 
     public class GroupBuilder : BuilderBase

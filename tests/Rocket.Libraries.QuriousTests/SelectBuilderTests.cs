@@ -1,6 +1,5 @@
 using Rocket.Libraries.Qurious;
 using Rocket.Libraries.QuriousTests.Models;
-using System;
 using Xunit;
 
 namespace Rocket.Libraries.QuriousTests

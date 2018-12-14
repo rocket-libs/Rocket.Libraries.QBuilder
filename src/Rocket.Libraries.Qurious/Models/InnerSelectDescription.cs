@@ -1,8 +1,5 @@
 ﻿namespace Rocket.Libraries.Qurious.Models
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Rocket.Libraries.Qurious.Builders;
 
     internal class InnerSelectDescription
