@@ -20,6 +20,11 @@
             _fieldNameResolver = new FieldNameResolver();
         }
 
+        public WhereConjuntionBuilder UseConjunction()
+        {
+            return _whereConjunctionBuilder;
+        }
+
         public WhereConjuntionBuilder Where<TTable>(FilterDescription<TTable> filterDescription)
         {
             if(filterDescription.FilterSet)
