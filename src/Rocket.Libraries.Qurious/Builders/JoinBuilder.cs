@@ -96,7 +96,7 @@
         {
             var leftField = _fieldNameResolver.GetFieldName(leftFieldNameDescriptor);
             var rightField = _fieldNameResolver.GetFieldName(rightFieldNameDescriptor);
-            QueueJoin(leftField,rightField,joinType);
+            QueueJoin<TRightField,TLeftTable>(leftField,rightField,joinType);
         }
 
         private void QueueJoin<TLeftTable, TRightTable>(string leftField, string rightField, string joinType)

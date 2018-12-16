@@ -67,9 +67,23 @@
         }
 
         public TableBoundSelectBuilder<TTable> UseTableBoundSelector<TTable>()
-            where TTable : new()
         {
             return new TableBoundSelectBuilder<TTable>(this, _selectBuilder);
+        }
+
+        public TableBoundGroupBuilder<TTable> UseTableBoundGrouper<TTable>()
+        {
+            return new TableBoundGroupBuilder<TTable>(this);
+        }
+
+        public TableBoundJoinBuilder<TLeftTable,TRightTable> UseTableBoundJoinBuilder<TLeftTable,TRightTable>()
+        {
+            return new TableBoundJoinBuilder<TLeftTable,TRightTable>(this);
+        }
+
+        public TableBoundWhereBuilder<TTable> UseTableBoundFilter<TTable>()
+        {
+            return new TableBoundWhereBuilder<TTable>(_whereBuilder, this);
         }
 
         public JoinBuilder UseJoiner()
