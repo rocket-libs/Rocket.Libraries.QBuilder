@@ -26,5 +26,17 @@
             _whereBuilder.SetNextConjunction("Or");
             return _whereBuilder;
         }
+
+        public TableBoundWhereBuilder<TTable> And<TTable>()
+        {
+            And();
+            return QBuilder.UseTableBoundFilter<TTable>();
+        }
+
+        public TableBoundWhereBuilder<TTable> Or<TTable>()
+        {
+            Or();
+            return QBuilder.UseTableBoundFilter<TTable>();
+        }
     }
 }

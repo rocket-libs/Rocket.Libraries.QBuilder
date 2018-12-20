@@ -2,10 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq.Expressions;
+    using Rocket.Libraries.Qurious.Helpers;
+    using Rocket.Libraries.Qurious.Models;
 
     public class WhereBuilder : BuilderBase
     {
         private List<WhereDescription> _wheres = new List<WhereDescription>();
+        private FieldNameResolver _fieldNameResolver;
         private string _nextConjuntion = "And";
         private WhereConjuntionBuilder _whereConjunctionBuilder;
 
@@ -13,6 +17,24 @@
             : base(qBuilder)
         {
             _whereConjunctionBuilder = new WhereConjuntionBuilder(this, qBuilder);
+            _fieldNameResolver = new FieldNameResolver();
+        }
+
+        public WhereConjuntionBuilder UseConjunction()
+        {
+            return _whereConjunctionBuilder;
+        }
+
+        public WhereConjuntionBuilder Where<TTable>(FilterDescription<TTable> filterDescription)
+        {
+            if(filterDescription.FilterSet)
+            {
+                return Where<TTable>(filterDescription.FieldName,filterDescription.Filter);
+            }
+            else
+            {
+                return _whereConjunctionBuilder;
+            }
         }
 
         public WhereConjuntionBuilder Where<TTable>(string field, string condition)

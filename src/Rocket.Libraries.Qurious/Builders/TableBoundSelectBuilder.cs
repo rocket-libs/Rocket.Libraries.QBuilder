@@ -5,7 +5,6 @@
     using System.Linq.Expressions;
 
     public class TableBoundSelectBuilder<TTable> : BuilderBase
-        where TTable : new()
     {
         private SelectBuilder _selectBuilder;
 

@@ -3,11 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
+    using Rocket.Libraries.Qurious.Helpers;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
 
     public class JoinBuilder : BuilderBase
     {
+        private FieldNameResolver _fieldNameResolver = new FieldNameResolver();
         public JoinBuilder(QBuilder qBuilder)
             : base(qBuilder)
         {
@@ -21,6 +24,11 @@
 
         private List<JoinDescription> Joins { get; set; } = new List<JoinDescription>();
 
+        public JoinBuilder InnerJoin<TLeftTable,TLeftField,TRightTable,TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
+        {
+            QueueJoin(leftFieldNameDescriptor,rightFieldNameDescriptor,JoinTypes.Inner);
+            return this;
+        }
         public JoinBuilder InnerJoin<TLeftTable, TRightTable>(string leftField, string rightField)
         {
             QueueJoin<TLeftTable, TRightTable>(leftField, rightField, JoinTypes.Inner);
@@ -82,6 +90,13 @@
 
             Joins = new List<JoinDescription>();
             return joins;
+        }
+
+        private void QueueJoin<TLeftTable,TLeftField,TRightTable,TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
+        {
+            var leftField = _fieldNameResolver.GetFieldName(leftFieldNameDescriptor);
+            var rightField = _fieldNameResolver.GetFieldName(rightFieldNameDescriptor);
+            QueueJoin<TRightField,TLeftTable>(leftField,rightField,joinType);
         }
 
         private void QueueJoin<TLeftTable, TRightTable>(string leftField, string rightField, string joinType)
