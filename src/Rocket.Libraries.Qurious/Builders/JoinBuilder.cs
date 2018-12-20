@@ -11,12 +11,15 @@
     public class JoinBuilder : BuilderBase
     {
         private FieldNameResolver _fieldNameResolver = new FieldNameResolver();
+        private List<DerivedTableJoinDescription> _derivedTableDescriptions = new List<DerivedTableJoinDescription>();
+        private List<string> _alreadyAliasedTables = new List<string>();
+
         public JoinBuilder(QBuilder qBuilder)
             : base(qBuilder)
         {
         }
 
-        internal string FirstTableName => Joins.First().RightTable;
+        internal string FirstTableName => Joins.First().LeftTable;
 
         internal bool JoinsExist => Joins.Count > 0;
 
@@ -24,11 +27,17 @@
 
         private List<JoinDescription> Joins { get; set; } = new List<JoinDescription>();
 
-        public JoinBuilder InnerJoin<TLeftTable,TLeftField,TRightTable,TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
+        public JoinBuilder InnerJoin<TLeftTable, TLeftField, TRightTable, TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
         {
-            QueueJoin(leftFieldNameDescriptor,rightFieldNameDescriptor,JoinTypes.Inner);
+            QueueJoin(leftFieldNameDescriptor, rightFieldNameDescriptor, JoinTypes.Inner);
             return this;
         }
+
+        public DerivedTableJoiner<TOuterTable> UseDerivedTableJoiner<TOuterTable>()
+        {
+            return new DerivedTableJoiner<TOuterTable>(this);
+        }
+
         public JoinBuilder InnerJoin<TLeftTable, TRightTable>(string leftField, string rightField)
         {
             QueueJoin<TLeftTable, TRightTable>(leftField, rightField, JoinTypes.Inner);
@@ -73,6 +82,18 @@
             return base.Then();
         }
 
+        internal JoinBuilder InnerJoinDerivedTable<TRightTable, TRightField>(Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, QBuilder derivedTable, string derivedFieldName)
+        {
+            _derivedTableDescriptions.Add(new DerivedTableJoinDescription
+            {
+                RightField = _fieldNameResolver.GetFieldName(rightFieldNameDescriptor),
+                RightTable = QBuilder.TableNameResolver(typeof(TRightTable)),
+                LeftField = derivedFieldName,
+                QBuilder = derivedTable,
+            });
+            return this;
+        }
+
         internal bool TableNotKnown(string table)
         {
             var occurenceCount = Joins.Count(a => a.LeftTable.Equals(table, StringComparison.CurrentCultureIgnoreCase)
@@ -82,7 +103,9 @@
 
         internal string Build()
         {
+            _alreadyAliasedTables.Add(QBuilder.FirstTableName);
             var joins = string.Empty;
+            PrepareDerivedJoinDescriptions();
             foreach (var joinDescription in Joins)
             {
                 joins += GetJoinLine(joinDescription);
@@ -92,11 +115,28 @@
             return joins;
         }
 
-        private void QueueJoin<TLeftTable,TLeftField,TRightTable,TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
+        private void PrepareDerivedJoinDescriptions()
+        {
+            foreach (var item in _derivedTableDescriptions)
+            {
+                var joinDescription = new JoinDescription
+                {
+                    JoinType = JoinTypes.Inner,
+                    RightField = item.RightField,
+                    RightTable = item.RightTable,
+                    LeftField = item.LeftField,
+                    ExplicitLeftTableAlias = item.QBuilder.DerivedTableName,
+                    DerivedTable = item.QBuilder.Build(),
+                };
+                Joins.Add(joinDescription);
+            }
+        }
+
+        private void QueueJoin<TLeftTable, TLeftField, TRightTable, TRightField>(Expression<Func<TLeftTable, TLeftField>> leftFieldNameDescriptor, Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, string joinType)
         {
             var leftField = _fieldNameResolver.GetFieldName(leftFieldNameDescriptor);
             var rightField = _fieldNameResolver.GetFieldName(rightFieldNameDescriptor);
-            QueueJoin<TRightField,TLeftTable>(leftField,rightField,joinType);
+            QueueJoin<TRightField, TLeftTable>(leftField, rightField, joinType);
         }
 
         private void QueueJoin<TLeftTable, TRightTable>(string leftField, string rightField, string joinType)
@@ -111,12 +151,58 @@
             });
         }
 
+        private string GetLeftTableAlias(JoinDescription joinDescription)
+        {
+            var leftTableAlias = joinDescription.ExplicitLeftTableAlias;
+            if (string.IsNullOrEmpty(leftTableAlias))
+            {
+                leftTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable);
+            }
+
+            return leftTableAlias;
+        }
+
         private string GetJoinLine(JoinDescription joinDescription)
         {
+            if (joinDescription.IsDerivedTableJoinDescription)
+            {
+                return GetDerivedTableJoin(joinDescription);
+            }
+            else
+            {
+                return GetNonDerivedTableJoinLine(joinDescription);
+            }
+        }
+
+        private string GetDerivedTableJoin(JoinDescription joinDescription)
+        {
             var joinPrefix = GetJoinPrefix(joinDescription);
-            var line = $"{joinPrefix}join {joinDescription.LeftTable} {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)} on {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)}.{joinDescription.LeftField}";
-            line += $" = {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable)}.{joinDescription.RightField}{Environment.NewLine}";
+            var leftTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(GetLeftTableAlias(joinDescription));
+
+            var rightTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable);
+            var line = $"join ({joinDescription.DerivedTable}) as {leftTableAlias} on {leftTableAlias}.{joinDescription.LeftField} = {rightTableAlias}.{joinDescription.RightField}";
+            line += Environment.NewLine;
             return line;
+        }
+
+        private string GetNonDerivedTableJoinLine(JoinDescription joinDescription)
+        {
+            FlipTablesIfLeftTableAlreadyAliased(joinDescription);
+            var joinPrefix = GetJoinPrefix(joinDescription);
+            var rightTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable);
+            var line = $"{joinPrefix}join {joinDescription.LeftTable} {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)} on {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)}.{joinDescription.LeftField}";
+            line += $" = {rightTableAlias}.{joinDescription.RightField}{Environment.NewLine}";
+            return line;
+        }
+
+        private void FlipTablesIfLeftTableAlreadyAliased(JoinDescription joinDescription)
+        {
+            var searchResult = _alreadyAliasedTables.FirstOrDefault(a => a.Equals(joinDescription.LeftTable, StringComparison.InvariantCultureIgnoreCase));
+            var leftTableAlreadyAliased = searchResult != null;
+            if (leftTableAlreadyAliased)
+            {
+                new JoinDescriptionFlipper().Flip(joinDescription);
+            }
         }
 
         private string GetJoinPrefix(JoinDescription joinDescription)
@@ -133,8 +219,10 @@
 
                 case JoinTypes.Inner:
                     return string.Empty;
+
                 case JoinTypes.RightJoin:
                     return "Right ";
+
                 case JoinTypes.LeftJoin:
                     return "Left ";
             }

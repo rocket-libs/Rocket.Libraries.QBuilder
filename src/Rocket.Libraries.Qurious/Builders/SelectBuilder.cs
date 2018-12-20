@@ -22,7 +22,7 @@
             _fieldNameResolver = new FieldNameResolver();
         }
 
-        internal string FirstTableName => _selects.First().Table;
+        internal string FirstTableName => _selects.FirstOrDefault()?.Table;
 
         private string SelectAlias { get; }
 
@@ -36,6 +36,11 @@
         {
             var field = _fieldNameResolver.GetFieldName(fieldNameResolver);
             return Select<TTable>(field);
+        }
+
+        public DerivedTableSelector GetDerivedTableSelector(QBuilder derivedTable)
+        {
+            return new DerivedTableSelector(derivedTable, this);
         }
 
         public SelectBuilder Select<TTable>(string field)
@@ -62,12 +67,19 @@
 
         public SelectBuilder SelectAggregated<TTable>(string field, string fieldAlias, string aggregateFunction)
         {
+            var table = QBuilder.TableNameResolver(typeof(TTable));
+            return SelectExplicit(table, field, fieldAlias, aggregateFunction, false);
+        }
+
+        public SelectBuilder SelectExplicit(string table, string field, string fieldAlias, string aggregateFunction, bool preventTableNameAliasing)
+        {
             _selects.Add(new SelectDescription
             {
                 Field = field,
-                Table = QBuilder.TableNameResolver(typeof(TTable)),
+                Table = table,
                 FieldAlias = fieldAlias,
                 AggregateFunction = aggregateFunction,
+                TableNameAliasingPrevented = preventTableNameAliasing,
             });
             return this;
         }
@@ -76,6 +88,18 @@
         {
             _distinctRows = true;
             return this;
+        }
+
+        private string GetTableName(SelectDescription selectDescription)
+        {
+            if (selectDescription.TableNameAliasingPrevented)
+            {
+                return selectDescription.Table;
+            }
+            else
+            {
+                return QBuilder.TableNameAliaser.GetTableAlias(selectDescription.Table);
+            }
         }
 
         internal string Build()
@@ -95,7 +119,9 @@
             foreach (var selectDescription in _selects)
             {
                 new DataValidator().EvaluateImmediate(() => TableNotKnown(selectDescription.Table), $"Table '{selectDescription.Table}' has not been queued as a datasource. Cannot show fields from it");
-                var qualifiedField = $"{QBuilder.TableNameAliaser.GetTableAlias(selectDescription.Table)}.{selectDescription.Field}";
+                var tableName = GetTableName(selectDescription);
+
+                var qualifiedField = $"{tableName}.{selectDescription.Field}";
                 var finalField = GetAggregatedFieldIfRequired(qualifiedField, selectDescription.AggregateFunction);
                 selects += $"{Environment.NewLine}{finalField}";
                 var hasAlias = !string.IsNullOrEmpty(selectDescription.FieldAlias);

@@ -9,5 +9,7 @@
         public string FieldAlias { get; set; }
 
         public string AggregateFunction { get; set; }
+
+        public bool TableNameAliasingPrevented { get; set; }
     }
 }

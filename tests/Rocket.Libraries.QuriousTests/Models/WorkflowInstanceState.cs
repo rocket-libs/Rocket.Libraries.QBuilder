@@ -4,7 +4,7 @@ namespace Rocket.Libraries.QuriousTests.Models
 {
     internal class WorkflowInstanceState
     {
-        public Guid WorkflowInstanceStateId { get; set; }
+        public Guid WorkflowInstanceId { get; set; }
         public DateTime Created { get; set; }
     }
 }
