@@ -2,7 +2,7 @@
 {
     public class JoinDescription
     {
-        public string LeftTable { get; set; }
+        public string LeftTable { get; set; } = string.Empty;
 
         public string LeftField { get; set; }
 

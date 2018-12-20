@@ -32,6 +32,7 @@ namespace Rocket.Libraries.QuriousTests
                 .UseJoiner()
                 .UseDerivedTableJoiner<WorkflowInstance>()
                 .InnerJoinDerivedTable(t => t.Id, derivedQuery, nameof(WorkflowInstanceState.WorkflowInstanceId))
+                .InnerJoin<User, WorkflowInstance>(nameof(User.Id), nameof(WorkflowInstance.UserId))
                 .Then()
                 .Build();
         }
