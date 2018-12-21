@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Version>3.0.0-beta11</Version>
+    <Version>3.0.0-beta15</Version>
     <PackageId>Rocket.Libraries.Qurious</PackageId>
     <Authors>Nyingi Maina</Authors>
     <Product>Rocket.Libraries.Qurious</Product>
