@@ -38,6 +38,8 @@
             _groupBuilder = new GroupBuilder(this);
         }
 
+        public string DerivedTableName => _derivedTableName;
+
         internal TableNameAliaser TableNameAliaser { get; set; }
 
         internal InnerSelectDescription InnerSelectDescription { get; set; }
@@ -60,7 +62,6 @@
         }
 
         private DataValidator DataValidator { get; } = new DataValidator();
-
         public SelectBuilder UseSelector()
         {
             return _selectBuilder;
@@ -76,14 +77,19 @@
             return new TableBoundGroupBuilder<TTable>(this);
         }
 
-        public TableBoundJoinBuilder<TLeftTable,TRightTable> UseTableBoundJoinBuilder<TLeftTable,TRightTable>()
+        public TableBoundJoinBuilder<TLeftTable, TRightTable> UseTableBoundJoinBuilder<TLeftTable, TRightTable>()
         {
-            return new TableBoundJoinBuilder<TLeftTable,TRightTable>(this);
+            return new TableBoundJoinBuilder<TLeftTable, TRightTable>(this);
         }
 
         public TableBoundWhereBuilder<TTable> UseTableBoundFilter<TTable>()
         {
             return new TableBoundWhereBuilder<TTable>(_whereBuilder, this);
+        }
+
+        public DerivedTableSelector UseDerivedTableSelector(QBuilder derivedTable)
+        {
+            return new DerivedTableSelector(derivedTable, _selectBuilder);
         }
 
         public JoinBuilder UseJoiner()
@@ -120,6 +126,7 @@
             return finalQuery;
         }
 
+        [Obsolete("Clumsy. don't use. Instead use the 'UseDerivedTableJoiner' in the Joiner(s)")]
         public JoinBuilder FinishJoinToDerivedTable()
         {
             var noInnerDescription = InnerSelectDescription == null;
@@ -134,12 +141,12 @@
 
         private string GetWrappedInSelectAlias(string query)
         {
-            var result = $"Select * from ({query}) as {_derivedTableName}";
+            var result = $"Select * from ({query}) as {DerivedTableName}";
             var isDerivedTable = InnerSelectDescription != null;
             if (isDerivedTable)
             {
                 result += "INNER";
-                result = $"({result}) as {_derivedTableName}";
+                result = $"({result}) as {DerivedTableName}";
             }
 
             result += $"{Environment.NewLine}";
@@ -158,7 +165,7 @@
                 var innerSelect = joiner.InnerSelectDescription;
                 var derivedTableQuery = innerSelect.QBuilder.Build();
                 var resultQuery = $"{query} Join {derivedTableQuery}"
-                    + $" on {innerSelect.DerivedTableName}.{innerSelect.InnerField} = {_derivedTableName}.{innerSelect.Field}";
+                    + $" on {innerSelect.DerivedTableName}.{innerSelect.InnerField} = {DerivedTableName}.{innerSelect.Field}";
                 return resultQuery;
             }
         }
