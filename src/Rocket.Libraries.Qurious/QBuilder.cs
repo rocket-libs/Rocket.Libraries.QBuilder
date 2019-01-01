@@ -62,7 +62,6 @@
         }
 
         private DataValidator DataValidator { get; } = new DataValidator();
-
         public SelectBuilder UseSelector()
         {
             return _selectBuilder;
@@ -86,6 +85,11 @@
         public TableBoundWhereBuilder<TTable> UseTableBoundFilter<TTable>()
         {
             return new TableBoundWhereBuilder<TTable>(_whereBuilder, this);
+        }
+
+        public DerivedTableSelector UseDerivedTableSelector(QBuilder derivedTable)
+        {
+            return new DerivedTableSelector(derivedTable, _selectBuilder);
         }
 
         public JoinBuilder UseJoiner()
@@ -122,6 +126,7 @@
             return finalQuery;
         }
 
+        [Obsolete("Clumsy. don't use. Instead use the 'UseDerivedTableJoiner' in the Joiner(s)")]
         public JoinBuilder FinishJoinToDerivedTable()
         {
             var noInnerDescription = InnerSelectDescription == null;

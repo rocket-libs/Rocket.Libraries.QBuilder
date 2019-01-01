@@ -25,7 +25,7 @@ namespace Rocket.Libraries.QuriousTests
                 .Select(t => t.Id)
                 .Then()
                 .UseSelector()
-                .GetDerivedTableSelector(derivedQuery)
+                .UseDerivedTableSelector(derivedQuery)
                 .Select("*")
                 .Then()
                 .Then()

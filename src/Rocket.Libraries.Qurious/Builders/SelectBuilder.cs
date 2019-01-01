@@ -38,11 +38,6 @@
             return Select<TTable>(field);
         }
 
-        public DerivedTableSelector GetDerivedTableSelector(QBuilder derivedTable)
-        {
-            return new DerivedTableSelector(derivedTable, this);
-        }
-
         public SelectBuilder Select<TTable>(string field)
         {
             return Select<TTable>(field, string.Empty);

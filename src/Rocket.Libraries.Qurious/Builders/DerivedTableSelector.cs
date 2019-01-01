@@ -33,9 +33,9 @@
             return this;
         }
 
-        public SelectBuilder Then()
+        public QBuilder Then()
         {
-            return SelectBuilder;
+            return SelectBuilder.Then();
         }
     }
 }
