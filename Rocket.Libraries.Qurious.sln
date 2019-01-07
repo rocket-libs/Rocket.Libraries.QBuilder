@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rocket.Libraries.Qurious", "src\Rocket.Libraries.Qurious\Rocket.Libraries.Qurious.csproj", "{0CE6E5D2-DDD7-46A8-ACEC-34FECDC890DC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rocket.Libraries.QuriousTests", "tests\Rocket.Libraries.QuriousTests\Rocket.Libraries.QuriousTests.csproj", "{B1E4586C-5E26-4A0B-B99B-6966A92C8AC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0CE6E5D2-DDD7-46A8-ACEC-34FECDC890DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CE6E5D2-DDD7-46A8-ACEC-34FECDC890DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CE6E5D2-DDD7-46A8-ACEC-34FECDC890DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CE6E5D2-DDD7-46A8-ACEC-34FECDC890DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E4586C-5E26-4A0B-B99B-6966A92C8AC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E4586C-5E26-4A0B-B99B-6966A92C8AC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E4586C-5E26-4A0B-B99B-6966A92C8AC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E4586C-5E26-4A0B-B99B-6966A92C8AC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A852EE96-B98B-4C52-8C8E-2C7AAE8B8436}
+	EndGlobalSection
+EndGlobal

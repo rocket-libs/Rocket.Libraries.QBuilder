@@ -1,17 +1,16 @@
-﻿namespace Rocket.Libraries.JoinBuilder
+﻿namespace Rocket.Libraries.Qurious.Models
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+    using System.Text;
 
-    public class JoinDescription
+    internal class DerivedTableJoinDescription
     {
-        public string LeftTable { get; set; }
-
         public string RightTable { get; set; }
 
         public string LeftField { get; set; }
+
+        public QBuilder QBuilder { get; set; }
 
         public string RightField { get; set; }
 
