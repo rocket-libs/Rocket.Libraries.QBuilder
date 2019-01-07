@@ -13,5 +13,7 @@
         public QBuilder QBuilder { get; set; }
 
         public string RightField { get; set; }
+
+        public string JoinType { get; set; }
     }
 }

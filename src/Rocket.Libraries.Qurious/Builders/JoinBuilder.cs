@@ -77,6 +77,7 @@
             return this;
         }
 
+        [Obsolete("This is an awfully painful way of joining to derived tables. Use DerivedTableJoiner instead")]
         public QBuilder BeginInnerJoinToDerivedTable(string derivedTableName, string innerField, string field)
         {
             InnerSelectDescription = new InnerSelectDescription
@@ -97,7 +98,7 @@
             return base.Then();
         }
 
-        internal JoinBuilder InnerJoinDerivedTable<TRightTable, TRightField>(Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, QBuilder derivedTable, string derivedFieldName)
+        internal JoinBuilder JoinDerivedTable<TRightTable, TRightField>(Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, QBuilder derivedTable, string derivedFieldName, string joinType)
         {
             var alreadyUsedDerivedTableInPreviousJoin = _alreadyJoinedDerivedTables.FirstOrDefault(a => a.Equals(derivedTable.DerivedTableName, StringComparison.InvariantCultureIgnoreCase))
                 != null;
@@ -105,17 +106,17 @@
             var rightTable = QBuilder.TableNameResolver(typeof(TRightTable));
             if (alreadyUsedDerivedTableInPreviousJoin)
             {
-                SecondaryDerivedTableJoin(rightField, rightTable, derivedTable, derivedFieldName);
+                SecondaryDerivedTableJoin(rightField, rightTable, derivedTable, derivedFieldName, joinType);
             }
             else
             {
-                InitialDerivedTableJoin(rightField, rightTable, derivedTable, derivedFieldName);
+                InitialDerivedTableJoin(rightField, rightTable, derivedTable, derivedFieldName, joinType);
             }
 
             return this;
         }
 
-        internal void SecondaryDerivedTableJoin(string rightField, string rightTable, QBuilder derivedTable, string derivedFieldName)
+        internal void SecondaryDerivedTableJoin(string rightField, string rightTable, QBuilder derivedTable, string derivedFieldName, string joinType)
         {
             var joinDescription = new JoinDescription
             {
@@ -123,12 +124,12 @@
                 ExplicitRightTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(derivedTable.DerivedTableName),
                 LeftField = rightField,
                 LeftTable = rightTable,
-                JoinType = JoinTypes.Inner
+                JoinType = joinType,
             };
             Joins.Add(joinDescription);
         }
 
-        internal void InitialDerivedTableJoin(string rightField, string rightTable, QBuilder derivedTable, string derivedFieldName)
+        internal void InitialDerivedTableJoin(string rightField, string rightTable, QBuilder derivedTable, string derivedFieldName, string joinType)
         {
             var derivedTableJoinDescription = new DerivedTableJoinDescription
             {
@@ -136,6 +137,7 @@
                 RightTable = rightTable,
                 LeftField = derivedFieldName,
                 QBuilder = derivedTable,
+                JoinType = joinType,
             };
             _alreadyJoinedDerivedTables.Add(derivedTable.DerivedTableName);
             TranslateToJoinDescription(derivedTableJoinDescription);
@@ -181,7 +183,7 @@
         {
             var joinDescription = new JoinDescription
             {
-                JoinType = JoinTypes.Inner,
+                JoinType = derivedTableJoinDescription.JoinType,
                 RightField = derivedTableJoinDescription.RightField,
                 RightTable = derivedTableJoinDescription.RightTable,
                 LeftField = derivedTableJoinDescription.LeftField,
@@ -243,7 +245,7 @@
             var leftTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(GetLeftTableAlias(joinDescription));
 
             var rightTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable);
-            var line = $"join ({joinDescription.DerivedTable}) as {leftTableAlias} on {leftTableAlias}.{joinDescription.LeftField} = {rightTableAlias}.{joinDescription.RightField}";
+            var line = $"{joinPrefix} join ({joinDescription.DerivedTable}) as {leftTableAlias} on {leftTableAlias}.{joinDescription.LeftField} = {rightTableAlias}.{joinDescription.RightField}";
             line += Environment.NewLine;
             return line;
         }
