@@ -1,9 +1,5 @@
 ﻿namespace Rocket.Libraries.Qurious.Helpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public class JoinDescriptionFlipper
     {
         public void Flip(JoinDescription joinDescription)

@@ -1,8 +1,5 @@
 ﻿using Rocket.Libraries.Qurious;
 using Rocket.Libraries.Qurious.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Rocket.Libraries.QuriousTests.Helpers
