@@ -38,5 +38,17 @@
             Or();
             return QBuilder.UseTableBoundFilter<TTable>();
         }
+
+        public WhereConjuntionBuilder OpenParentheses()
+        {
+            _whereBuilder.OpenParentheses();
+            return this;
+        }
+
+        public WhereConjuntionBuilder CloseParentheses()
+        {
+            _whereBuilder.CloseParentheses();
+            return this;
+        }
     }
 }

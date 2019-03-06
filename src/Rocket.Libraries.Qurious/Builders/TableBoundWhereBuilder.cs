@@ -1,10 +1,10 @@
 namespace Rocket.Libraries.Qurious.Builders
 {
+    using Rocket.Libraries.Qurious.Helpers;
+    using Rocket.Libraries.Qurious.Models;
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
-    using Rocket.Libraries.Qurious.Helpers;
-    using Rocket.Libraries.Qurious.Models;
 
     public class TableBoundWhereBuilder<TTable> : BuilderBase
     {
@@ -50,6 +50,18 @@ namespace Rocket.Libraries.Qurious.Builders
         public WhereConjuntionBuilder WhereExplicitly(string criteria)
         {
             return _whereBuilder.WhereExplicitly(criteria);
+        }
+
+        public TableBoundWhereBuilder<TTable> OpenParentheses()
+        {
+            _whereBuilder.OpenParentheses();
+            return this;
+        }
+
+        public TableBoundWhereBuilder<TTable> CloseParentheses()
+        {
+            _whereBuilder.CloseParentheses();
+            return this;
         }
     }
 }

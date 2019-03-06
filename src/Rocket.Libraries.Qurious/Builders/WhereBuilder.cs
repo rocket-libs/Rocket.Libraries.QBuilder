@@ -1,11 +1,11 @@
 ﻿namespace Rocket.Libraries.Qurious.Builders
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using Rocket.Libraries.Qurious.Helpers;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class WhereBuilder : BuilderBase
     {
@@ -52,7 +52,7 @@
 
         public WhereBuilder OpenParentheses()
         {
-            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null, "Nested parentheses are not yet supported.");
+            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
             _parentheses.Add(new ParenthesesDescription
             {
                 Closed = false,
