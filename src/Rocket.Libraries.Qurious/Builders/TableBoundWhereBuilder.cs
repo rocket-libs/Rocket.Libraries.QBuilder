@@ -63,5 +63,45 @@ namespace Rocket.Libraries.Qurious.Builders
             _whereBuilder.CloseParentheses();
             return this;
         }
+
+        public WhereConjuntionBuilder WhereEqualTo<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.EqualTo, value);
+        }
+
+        public WhereConjuntionBuilder WhereLessThan<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.LessThan, value);
+        }
+
+        public WhereConjuntionBuilder WhereLessThanOrEqualTo<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.LessThanOrEqualTo, value);
+        }
+
+        public WhereConjuntionBuilder WhereGreaterThan<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.GreaterThan, value);
+        }
+
+        public WhereConjuntionBuilder WhereGreaterThanOrEqualTo<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.GreaterThanOrEqualTo, value);
+        }
+
+        public WhereConjuntionBuilder WhereStartsWith<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.StartsWith, value);
+        }
+
+        public WhereConjuntionBuilder WhereEndsWith<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.EndsWith, value);
+        }
+
+        public WhereConjuntionBuilder WhereNotEqualTo<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.NotEqualTo, value);
+        }
     }
 }
