@@ -2,17 +2,25 @@
 {
     using System;
     using Rocket.Libraries.Qurious.Builders;
+    using Rocket.Libraries.Qurious.Builders.Paging;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
 
     public class QBuilder
     {
         private readonly SelectBuilder _selectBuilder;
+
         private readonly OrderBuilder _orderBuilder;
+
         private readonly JoinBuilder _joinBuilder;
+
         private readonly WhereBuilder _whereBuilder;
+
         private readonly string _derivedTableName;
+
         private readonly GroupBuilder _groupBuilder;
+
+        private string _suffix;
 
         public QBuilder()
             : this("t")
@@ -36,6 +44,11 @@
             _joinBuilder = new JoinBuilder(this);
             _whereBuilder = new WhereBuilder(this);
             _groupBuilder = new GroupBuilder(this);
+        }
+
+        internal void SetSuffix(string suffix)
+        {
+            _suffix = suffix;
         }
 
         public string DerivedTableName => _derivedTableName;
@@ -62,6 +75,7 @@
         }
 
         private DataValidator DataValidator { get; } = new DataValidator();
+
         public SelectBuilder UseSelector()
         {
             return _selectBuilder;
@@ -90,6 +104,16 @@
         public DerivedTableSelector UseDerivedTableSelector(QBuilder derivedTable)
         {
             return new DerivedTableSelector(derivedTable, _selectBuilder);
+        }
+
+        public SqlServerPagingBuilder<TTable> UseSqlServerPagingBuilder<TTable>()
+        {
+            return new SqlServerPagingBuilder<TTable>(this);
+        }
+
+        public MySqlServerPagingBuilder<TTable> UseMySqlServerPagingBuilder<TTable>()
+        {
+            return new MySqlServerPagingBuilder<TTable>(this);
         }
 
         public JoinBuilder UseJoiner()
@@ -123,7 +147,8 @@
                 + UseOrdering().Build();
             var wrappedQuery = GetWrappedInSelectAlias(query);
             var finalQuery = GetWithInnerSelectJoinIfRequired(wrappedQuery);
-            return finalQuery;
+            var suffixedQuery = finalQuery + " " + _suffix;
+            return suffixedQuery.Trim();
         }
 
         [Obsolete("Clumsy. don't use. Instead use the 'UseDerivedTableJoiner' in the Joiner(s)")]
