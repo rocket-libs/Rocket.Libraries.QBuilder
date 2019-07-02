@@ -10,10 +10,14 @@
     public class SelectBuilder : BuilderBase
     {
         private List<SelectDescription> _selects = new List<SelectDescription>();
+
         private bool _distinctRows = false;
+
         private long? _top;
 
         private FieldNameResolver _fieldNameResolver;
+
+        private string _selectPrefix;
 
         internal SelectBuilder(QBuilder qBuilder, string selectAlias)
             : base(qBuilder)
@@ -85,16 +89,10 @@
             return this;
         }
 
-        private string GetTableName(SelectDescription selectDescription)
+        internal SelectBuilder SetSelectPrefix(string field)
         {
-            if (selectDescription.TableNameAliasingPrevented)
-            {
-                return selectDescription.Table;
-            }
-            else
-            {
-                return QBuilder.TableNameAliaser.GetTableAlias(selectDescription.Table);
-            }
+            _selectPrefix = field;
+            return this;
         }
 
         internal string Build()
@@ -109,6 +107,12 @@
             if (_distinctRows)
             {
                 selects += $" Distinct {Environment.NewLine}";
+            }
+
+            var hasPrefix = !string.IsNullOrEmpty(_selectPrefix);
+            if (hasPrefix)
+            {
+                selects += $" {_selectPrefix}";
             }
 
             foreach (var selectDescription in _selects)
@@ -132,6 +136,18 @@
             selects = selects.Substring(0, selects.Length - 1) + $" From {firstTableName} " + QBuilder.TableNameAliaser.GetTableAlias(firstTableName);
             _selects = new List<SelectDescription>();
             return selects + Environment.NewLine;
+        }
+
+        private string GetTableName(SelectDescription selectDescription)
+        {
+            if (selectDescription.TableNameAliasingPrevented)
+            {
+                return selectDescription.Table;
+            }
+            else
+            {
+                return QBuilder.TableNameAliaser.GetTableAlias(selectDescription.Table);
+            }
         }
 
         private string GetAggregatedFieldIfRequired(string qualifiedField, string aggregateFunction)

@@ -1,12 +1,11 @@
 ﻿namespace Rocket.Libraries.Qurious.Builders
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Linq.Expressions;
     using Rocket.Libraries.Qurious.Helpers;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     public class WhereBuilder : BuilderBase
     {
@@ -28,7 +27,7 @@
             {
                 var explicitParentheses = _parentheses.LastOrDefault(a => a.Closed == false);
                 var hasExplicitedParentheses = explicitParentheses != null;
-                if(hasExplicitedParentheses)
+                if (hasExplicitedParentheses)
                 {
                     return explicitParentheses;
                 }
@@ -53,8 +52,9 @@
 
         public WhereBuilder OpenParentheses()
         {
-            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null,"Nested parentheses are not yet supported.");
-            _parentheses.Add(new ParenthesesDescription{
+            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
+            _parentheses.Add(new ParenthesesDescription
+            {
                 Closed = false,
                 Id = Guid.NewGuid()
             });
@@ -64,21 +64,27 @@
         public WhereBuilder CloseParentheses()
         {
             var noOpenParentheses = CurrentParentheses == null || CurrentParentheses.Id == _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => noOpenParentheses,"There is currently no open parentheses. Nothing to close.");
+            new DataValidator().EvaluateImmediate(() => noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
             CurrentParentheses.Closed = true;
             return this;
         }
 
         public WhereConjuntionBuilder Where<TTable>(FilterDescription<TTable> filterDescription)
         {
-            if(filterDescription.FilterSet)
+            if (filterDescription.FilterSet)
             {
-                return Where<TTable>(filterDescription.FieldName,filterDescription.Filter);
+                return Where<TTable>(filterDescription.FieldName, filterDescription.Filter);
             }
             else
             {
                 return _whereConjunctionBuilder;
             }
+        }
+
+        public WhereConjuntionBuilder Where<TTable>(string field, FilterOperator op, object value)
+        {
+            var condition = new ConditionMaker().GetCondition(op, value);
+            return Where<TTable>(field, condition);
         }
 
         public WhereConjuntionBuilder Where<TTable>(string field, string condition)
@@ -160,7 +166,7 @@
         {
             var where = string.Empty;
             var unClosedParenthesesExists = CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => unClosedParenthesesExists,$"An unclosed parentheses was found. Please check your query.");
+            new DataValidator().EvaluateImmediate(() => unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
             var currentParenthesesId = _implicitParentheses.Id;
 
             foreach (var whereDescription in _wheres)
@@ -168,7 +174,7 @@
                 var parenthesesIdIsDifferent = currentParenthesesId != whereDescription.ParenthesesId;
                 var exitingExplicitParentheses = parenthesesIdIsDifferent && currentParenthesesId != _implicitParentheses.Id;
                 var enteringImplicitParentheses = whereDescription.ParenthesesId == _implicitParentheses.Id;
-                if(exitingExplicitParentheses)
+                if (exitingExplicitParentheses)
                 {
                     where += ")";
                 }
@@ -178,9 +184,9 @@
                     where += $" {whereDescription.Conjunction} ";
                 }
 
-                if(parenthesesIdIsDifferent)
+                if (parenthesesIdIsDifferent)
                 {
-                    if(enteringImplicitParentheses == false)
+                    if (enteringImplicitParentheses == false)
                     {
                         where += " (";
                     }
@@ -190,7 +196,7 @@
                 where += $"{whereDescription.Clause}{Environment.NewLine}";
             }
 
-            where = GetWithFinalParenthesesTerminatedIfRequired(currentParenthesesId,where);
+            where = GetWithFinalParenthesesTerminatedIfRequired(currentParenthesesId, where);
 
             _wheres = new List<WhereDescription>();
             if (string.IsNullOrEmpty(where))
@@ -206,13 +212,13 @@
         private string GetWithFinalParenthesesTerminatedIfRequired(Guid currentParenthesesId, string where)
         {
             var hasUnterminatedParentheses = currentParenthesesId != _implicitParentheses.Id;
-            if(hasUnterminatedParentheses)
+            if (hasUnterminatedParentheses)
             {
                 where += ") ";
             }
             return where;
         }
-        
+
         private string GetWhereInSectionArguments<TValueType>(List<TValueType> values)
         {
             if (values == null)

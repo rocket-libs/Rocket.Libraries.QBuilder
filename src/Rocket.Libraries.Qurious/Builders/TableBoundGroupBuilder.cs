@@ -1,9 +1,9 @@
-using System;
-using System.Linq.Expressions;
-using Rocket.Libraries.Qurious.Helpers;
-
 namespace Rocket.Libraries.Qurious.Builders
 {
+    using System;
+    using System.Linq.Expressions;
+    using Rocket.Libraries.Qurious.Helpers;
+
     public class TableBoundGroupBuilder<TTable> : BuilderBase
     {
         public TableBoundGroupBuilder(QBuilder qBuilder)
