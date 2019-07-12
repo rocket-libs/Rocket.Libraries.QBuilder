@@ -16,7 +16,7 @@
 
         private readonly WhereBuilder _whereBuilder;
 
-        private readonly string _derivedTableName;
+        internal readonly string _aliasTableName;
 
         private readonly GroupBuilder _groupBuilder;
 
@@ -37,7 +37,7 @@
         public QBuilder(Func<Type, string> tableNameResolver, string aliasTablename)
         {
             TableNameResolver = tableNameResolver;
-            _derivedTableName = aliasTablename;
+            _aliasTableName = aliasTablename;
             TableNameAliaser = new TableNameAliaser(tableNameResolver);
             _orderBuilder = new OrderBuilder(this);
             _selectBuilder = new SelectBuilder(this, "t");
@@ -51,7 +51,7 @@
             _suffix = suffix;
         }
 
-        public string DerivedTableName => _derivedTableName;
+        public string DerivedTableName => _aliasTableName;
 
         internal TableNameAliaser TableNameAliaser { get; set; }
 

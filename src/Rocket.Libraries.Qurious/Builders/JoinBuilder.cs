@@ -11,8 +11,10 @@
     public class JoinBuilder : BuilderBase
     {
         private FieldNameResolver _fieldNameResolver = new FieldNameResolver();
+
         private List<string> _alreadyAliasedTables = new List<string>();
-        private List<string> _alreadyJoinedDerivedTables = new List<string>();
+
+        private List<string> _joinedDerivedTables = new List<string>();
 
         public JoinBuilder(QBuilder qBuilder)
             : base(qBuilder)
@@ -39,6 +41,8 @@
         internal bool JoinsExist => Joins.Count > 0;
 
         internal InnerSelectDescription InnerSelectDescription { get; set; }
+
+        internal List<string> JoinedDerivedTables => _joinedDerivedTables;
 
         private List<JoinDescription> Joins { get; set; } = new List<JoinDescription>();
 
@@ -100,7 +104,7 @@
 
         internal JoinBuilder JoinDerivedTable<TRightTable, TRightField>(Expression<Func<TRightTable, TRightField>> rightFieldNameDescriptor, QBuilder derivedTable, string derivedFieldName, string joinType)
         {
-            var alreadyUsedDerivedTableInPreviousJoin = _alreadyJoinedDerivedTables.FirstOrDefault(a => a.Equals(derivedTable.DerivedTableName, StringComparison.InvariantCultureIgnoreCase))
+            var alreadyUsedDerivedTableInPreviousJoin = JoinedDerivedTables.FirstOrDefault(a => a.Equals(derivedTable.DerivedTableName, StringComparison.InvariantCultureIgnoreCase))
                 != null;
             var rightField = _fieldNameResolver.GetFieldName(rightFieldNameDescriptor);
             var rightTable = QBuilder.TableNameResolver(typeof(TRightTable));
@@ -139,14 +143,16 @@
                 QBuilder = derivedTable,
                 JoinType = joinType,
             };
-            _alreadyJoinedDerivedTables.Add(derivedTable.DerivedTableName);
+            JoinedDerivedTables.Add(derivedTable.DerivedTableName);
             TranslateToJoinDescription(derivedTableJoinDescription);
         }
 
         internal bool TableNotKnown(string table)
         {
             var match = Joins.FirstOrDefault(a => TableFoundInJoin(table, a));
-            return match == null;
+            var isRawTableJoin = match != null;
+            var isDerivedTable = _joinedDerivedTables.FirstOrDefault(a => a.Equals(table, StringComparison.InvariantCultureIgnoreCase)) != null;
+            return isDerivedTable == false && isRawTableJoin == false;
         }
 
         internal bool TableFoundInJoin(string table, JoinDescription joinDescription)
@@ -231,7 +237,14 @@
             }
             else if (joinDescription.IsSecondaryDerivedTableJoin)
             {
-                return GetSecondaryDerivedTableJoin(joinDescription);
+                if (joinDescription.Consumed == false)
+                {
+                    return GetSecondaryDerivedTableJoin(joinDescription);
+                }
+                else
+                {
+                    return string.Empty;
+                }
             }
             else
             {
@@ -241,12 +254,27 @@
 
         private string GetInitialDerivedTableJoin(JoinDescription joinDescription)
         {
+            var derivedTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(GetLeftTableAlias(joinDescription));
             var joinPrefix = GetJoinPrefix(joinDescription);
-            var leftTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(GetLeftTableAlias(joinDescription));
+            var secondaryJoins = Joins
+                .Where(a => a.Id != joinDescription.Id)
+                .Where(a =>
+            {
+                var sameOuterTable = a.LeftTable.Equals(joinDescription.RightTable, StringComparison.InvariantCultureIgnoreCase);
+                var hasDerivedTable = !string.IsNullOrEmpty(a.ExplicitRightTableAlias);
+                var sameDerivedTable = hasDerivedTable && a.ExplicitRightTableAlias.Equals(derivedTableAlias, StringComparison.InvariantCultureIgnoreCase);
+                return sameOuterTable && sameDerivedTable;
+            }).ToList();
 
             var rightTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable);
-            var line = $"{joinPrefix} join ({joinDescription.DerivedTable}) as {leftTableAlias} on {leftTableAlias}.{joinDescription.LeftField} = {rightTableAlias}.{joinDescription.RightField}";
+            var line = $"{joinPrefix} join ({joinDescription.DerivedTable}) as {derivedTableAlias} on {derivedTableAlias}.{joinDescription.LeftField} = {rightTableAlias}.{joinDescription.RightField}";
             line += Environment.NewLine;
+            foreach (var secJoin in secondaryJoins)
+            {
+                secJoin.Consumed = true;
+                line += $" and {rightTableAlias}.{secJoin.LeftField} = {secJoin.ExplicitRightTableAlias}.{secJoin.RightField}";
+            }
+
             return line;
         }
 
@@ -255,8 +283,8 @@
             FlipTablesIfLeftTableAlreadyAliased(joinDescription);
             var joinPrefix = GetJoinPrefix(joinDescription);
             var rightTableAlias = joinDescription.ExplicitRightTableAlias;
-            var line = $"{joinPrefix}join {joinDescription.LeftTable} {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)} on {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable)}.{joinDescription.LeftField}";
-            line += $" = {rightTableAlias}.{joinDescription.RightField}{Environment.NewLine}";
+            var line = $"{joinPrefix}join {joinDescription.RightTable} {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable)} on {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable)}.{joinDescription.RightField}";
+            line += $" = {rightTableAlias}.{joinDescription.LeftField}{Environment.NewLine}";
             return line;
         }
 

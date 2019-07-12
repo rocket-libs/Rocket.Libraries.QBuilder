@@ -1,7 +1,11 @@
-﻿namespace Rocket.Libraries.Qurious
+﻿using System;
+
+namespace Rocket.Libraries.Qurious
 {
     public class JoinDescription
     {
+        private Guid _id;
+
         public string LeftTable { get; set; } = string.Empty;
 
         public string LeftField { get; set; } = string.Empty;
@@ -25,6 +29,21 @@
             !string.IsNullOrEmpty(ExplicitRightTableAlias);
 
         public string ExplicitRightTableAlias { get; internal set; }
+
+        public bool Consumed { get; internal set; }
+
+        internal Guid Id
+        {
+            get
+            {
+                if (_id == default(Guid))
+                {
+                    _id = Guid.NewGuid();
+                }
+
+                return _id;
+            }
+        }
 
         public override string ToString()
         {
