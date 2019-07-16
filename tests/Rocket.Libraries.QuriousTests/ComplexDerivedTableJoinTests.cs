@@ -35,6 +35,8 @@ namespace Rocket.Libraries.QuriousTests
                 .UseJoiner()
                 .UseDerivedTableJoiner<TaskDefinition>()
                 .LeftJoin(taskDefinition => taskDefinition.Id, taskExecutionHistoryQBuilder, nameof(TaskExecutionHistory.TaskDefinitionId))
+                /*.UseDerivedTableJoiner<Ender>()
+                .LeftJoin(ender => ender.EndTime, taskExecutionHistoryQBuilder, nameof(TaskExecutionHistory.StartTime))*/
                 .Then()
                 .Build();
         }

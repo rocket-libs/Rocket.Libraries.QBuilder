@@ -194,5 +194,18 @@
                 return resultQuery;
             }
         }
+
+        public override string ToString()
+        {
+            var hasAlias = !string.IsNullOrEmpty(_aliasTableName);
+            if (hasAlias)
+            {
+                return _aliasTableName;
+            }
+            else
+            {
+                return base.ToString();
+            }
+        }
     }
 }
