@@ -124,10 +124,10 @@
         {
             var joinDescription = new JoinDescription
             {
-                RightField = derivedFieldName,
-                ExplicitRightTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(derivedTable.DerivedTableName),
-                LeftField = rightField,
                 LeftTable = rightTable,
+                LeftField = rightField,
+                ExplicitRightTableAlias = DerivedTableWrapperNameResolver.GetWrapperName(derivedTable.DerivedTableName),
+                RightField = derivedFieldName,
                 JoinType = joinType,
             };
             Joins.Add(joinDescription);
@@ -283,8 +283,9 @@
             FlipTablesIfLeftTableAlreadyAliased(joinDescription);
             var joinPrefix = GetJoinPrefix(joinDescription);
             var rightTableAlias = joinDescription.ExplicitRightTableAlias;
-            var line = $"{joinPrefix}join {joinDescription.RightTable} {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable)} on {QBuilder.TableNameAliaser.GetTableAlias(joinDescription.RightTable)}.{joinDescription.RightField}";
-            line += $" = {rightTableAlias}.{joinDescription.LeftField}{Environment.NewLine}";
+            var leftTableAlias = QBuilder.TableNameAliaser.GetTableAlias(joinDescription.LeftTable);
+            var line = $"{joinPrefix}join {joinDescription.LeftTable} {leftTableAlias} on {leftTableAlias}.{joinDescription.LeftField}";
+            line += $" = {rightTableAlias}.{joinDescription.RightField}{Environment.NewLine}";
             return line;
         }
 
