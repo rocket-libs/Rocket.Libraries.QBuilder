@@ -9,6 +9,7 @@ namespace Rocket.Libraries.Qurious.Builders
     public class TableBoundWhereBuilder<TTable> : BuilderBase
     {
         private WhereBuilder _whereBuilder;
+
         private FieldNameResolver _fieldNameResolver;
 
         public TableBoundWhereBuilder(WhereBuilder whereBuilder, QBuilder qBuilder)
@@ -92,6 +93,11 @@ namespace Rocket.Libraries.Qurious.Builders
         public WhereConjuntionBuilder WhereStartsWith<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
         {
             return Where(fieldNameDescriptor, FilterOperator.StartsWith, value);
+        }
+
+        public WhereConjuntionBuilder WhereContains<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
+        {
+            return Where(fieldNameDescriptor, FilterOperator.Contains, value);
         }
 
         public WhereConjuntionBuilder WhereEndsWith<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, object value)
