@@ -20,10 +20,6 @@
 
         private Action _doDerivedTableJoin;
 
-        private List<Action> _resultQbuilderFilters = new List<Action>();
-
-        private List<Action> _innerQbuilderFilters = new List<Action>();
-
         private string _aggregationFunction;
 
         private Func<Type, string> _tableNameResolver;
@@ -104,25 +100,6 @@
             return this;
         }
 
-        /*public AggregateRowQuerierBuilder<THistoricalTable> SetFilterValueAsList<TValueType>(List<TValueType> filterValues)
-        {
-            FailIfFilterAlreadySet();
-            _innerQbuilderFilters = () =>
-            {
-                InnerQBuilder.
-               UseFilter()
-                   .WhereIn<THistoricalTable, TValueType>(_foreignKeyName, filterValues);
-            };
-
-            _resultQbuilderFilters = () =>
-            {
-                ResultQbuilder.
-                 UseFilter()
-                     .WhereIn<THistoricalTable, TValueType>(_foreignKeyName, filterValues);
-            };
-            return this;
-        }*/
-
         public AggregateRowQuerierBuilder<THistoricalTable> SetForeignKeyResolver<TField>(Expression<Func<THistoricalTable, TField>> foreignKeyResolver)
         {
             _foreignKeyName = new FieldNameResolver().GetFieldName(foreignKeyResolver);
@@ -147,8 +124,6 @@
              .UseGrouper()
              .GroupBy<THistoricalTable>(_foreignKeyName);
 
-            // _innerQbuilderFilters();
-
             ResultQbuilder
                 .UseSelector()
                 .Select<THistoricalTable>("*")
@@ -156,18 +131,13 @@
 
             _doDerivedTableJoin();
 
-            //_resultQbuilderFilters();
-            _resultQbuilderFilters = null;
             _doDerivedTableJoin = null;
-            _innerQbuilderFilters = null;
-
             return ResultQbuilder;
         }
 
         private void FailIfInvalid()
         {
             new DataValidator()
-                .AddFailureCondition(() => _resultQbuilderFilters == null || _innerQbuilderFilters == null, "Filtering was not specified, cannot generate query as can't tell which records qualify for comparison.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
