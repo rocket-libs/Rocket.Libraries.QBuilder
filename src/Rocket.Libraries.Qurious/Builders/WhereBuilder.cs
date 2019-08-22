@@ -10,8 +10,11 @@
     public class WhereBuilder : BuilderBase
     {
         private List<WhereDescription> _wheres = new List<WhereDescription>();
+
         private FieldNameResolver _fieldNameResolver;
+
         private string _nextConjuntion = "And";
+
         private WhereConjuntionBuilder _whereConjunctionBuilder;
 
         private List<ParenthesesDescription> _parentheses = new List<ParenthesesDescription>();
@@ -100,7 +103,7 @@
 
         public WhereConjuntionBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
         {
-            var criteria = GetWhereInSectionArguments(values);
+            var criteria = WhereInFilterMaker.GetWhereInSectionArguments(values);
 
             if (string.IsNullOrEmpty(criteria))
             {
@@ -216,26 +219,8 @@
             {
                 where += ") ";
             }
-            return where;
-        }
 
-        private string GetWhereInSectionArguments<TValueType>(List<TValueType> values)
-        {
-            if (values == null)
-            {
-                throw new Exception("Cannot build a where clause from an null list of values");
-            }
-            if (values.Count == 0)
-            {
-                return string.Empty;
-            }
-            var args = string.Empty;
-            foreach (var value in values)
-            {
-                args += $",'{value}'";
-            }
-            args = $"({args.Substring(1)})";
-            return args;
+            return where;
         }
     }
 }
