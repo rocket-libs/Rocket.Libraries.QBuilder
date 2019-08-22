@@ -1,14 +1,13 @@
 ﻿namespace Rocket.Libraries.Qurious.Helpers
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq.Expressions;
     using Rocket.Libraries.Validation.Services;
 
     public class AggregateRowQuerierBuilder<THistoricalTable>
     {
         private const string LatestVersion = "LatestVersion";
-
-        private object _groupingValue;
 
         private string _foreignKeyName;
 
@@ -20,11 +19,14 @@
 
         private Action _doDerivedTableJoin;
 
+        private Action _doFilter;
+
         private string _aggregationFunction;
 
         private Func<Type, string> _tableNameResolver;
 
         private string _aliasTablename;
+        private FilterOperator _filterOperator;
 
         public AggregateRowQuerierBuilder()
             : this("t")
@@ -37,6 +39,7 @@
 
         {
         }
+        
 
         public AggregateRowQuerierBuilder(Func<Type, string> tableNameResolver, string aliasTablename)
         {
@@ -76,10 +79,42 @@
             return this;
         }
 
-        public AggregateRowQuerierBuilder<THistoricalTable> SetGroupingValue<TValue>(TValue groupingValue)
+        
+
+        public AggregateRowQuerierBuilder<THistoricalTable> SetGroupingValue<TValueType>(TValueType groupingValue)
         {
-            _groupingValue = groupingValue;
+            FailIfFilterAlreadySet();
+            _doFilter = () => 
+            {
+                InnerQBuilder.
+                UseFilter()
+                    .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo,groupingValue);
+                ResultQbuilder.
+                UseFilter()
+                    .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo,groupingValue);
+            };
             return this;
+        }
+
+        public AggregateRowQuerierBuilder<THistoricalTable> SetGroupingValueAsList<TValueType>(List<TValueType> groupingValues)
+        {
+            FailIfFilterAlreadySet();
+            _doFilter = () => 
+            {
+                InnerQBuilder.
+                UseFilter()
+                    .WhereIn<THistoricalTable, TValueType>(_foreignKeyName, groupingValues);
+                ResultQbuilder.
+                UseFilter()
+                    .WhereIn<THistoricalTable, TValueType>(_foreignKeyName, groupingValues);
+            };
+            return this; 
+        }
+
+        private void FailIfFilterAlreadySet()
+        {
+            new DataValidator()
+                .EvaluateImmediate(() => _doFilter != null,"Grouping has already been set. Grouping can only be set once.");
         }
 
         public AggregateRowQuerierBuilder<THistoricalTable> SetForeignKeyResolver<TField>(Expression<Func<THistoricalTable, TField>> foreignKeyResolver)
@@ -103,21 +138,17 @@
              .Select<THistoricalTable>(_foreignKeyName)
              .SelectAggregated<THistoricalTable>(_incrementingFieldName, LatestVersion, _aggregationFunction)
              .Then()
-             .UseFilter()
-             .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo, _groupingValue)
-             .Then()
              .UseGrouper()
              .GroupBy<THistoricalTable>(_foreignKeyName);
 
             ResultQbuilder
                 .UseSelector()
                 .Select<THistoricalTable>("*")
-                .Then()
-                .UseFilter()
-                .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo, _groupingValue)
                 .Then();
 
             _doDerivedTableJoin();
+            _doFilter();
+            _doFilter = null;
             _doDerivedTableJoin = null;
             return ResultQbuilder;
         }
@@ -125,10 +156,11 @@
         private void FailIfInvalid()
         {
             new DataValidator()
-                .AddFailureCondition(() => _groupingValue == null, "No grouping value was specified, cannot generate query as can't tell which records qualify for comparison.", false)
+                .AddFailureCondition(() => _doFilter == null, "No grouping value was specified, cannot generate query as can't tell which records qualify for comparison.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
                 .AddFailureCondition(() => string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
+                .AddFailureCondition(() => _filterOperator == default,$"Filter operator has not been set",false)
                 .ThrowExceptionOnInvalidRules();
         }
 
@@ -142,5 +174,7 @@
                 .InnerJoin(incrementingFieldNameResolver, InnerQBuilder, LatestVersion);
             };
         }
+
+        
     }
 }
