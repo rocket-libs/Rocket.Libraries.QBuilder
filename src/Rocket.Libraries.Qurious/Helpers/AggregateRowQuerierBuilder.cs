@@ -8,7 +8,7 @@
 
     public class AggregateRowQuerierBuilder<THistoricalTable>
     {
-        private const string LatestVersion = "LatestVersion";
+        public const string LatestVersion = "LatestVersion";
 
         private string _foreignKeyName;
 
