@@ -55,7 +55,7 @@
 
         public WhereBuilder OpenParentheses()
         {
-            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
+            new DataValidator().EvaluateImmediate(CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
             _parentheses.Add(new ParenthesesDescription
             {
                 Closed = false,
@@ -67,7 +67,7 @@
         public WhereBuilder CloseParentheses()
         {
             var noOpenParentheses = CurrentParentheses == null || CurrentParentheses.Id == _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
+            new DataValidator().EvaluateImmediate(noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
             CurrentParentheses.Closed = true;
             return this;
         }
@@ -169,7 +169,7 @@
         {
             var where = string.Empty;
             var unClosedParenthesesExists = CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
+            new DataValidator().EvaluateImmediate(unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
             var currentParenthesesId = _implicitParentheses.Id;
 
             foreach (var whereDescription in _wheres)
