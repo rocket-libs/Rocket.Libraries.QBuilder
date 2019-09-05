@@ -26,7 +26,7 @@
             get
             {
                 var firstJoin = Joins.FirstOrDefault();
-                DataValidator.EvaluateImmediate(() => firstJoin == null, "Could not find a join to use for first table");
+                DataValidator.EvaluateImmediate(firstJoin == null, "Could not find a join to use for first table");
                 if (firstJoin.IsInitialDerivedTableJoin)
                 {
                     return firstJoin.RightTable;
@@ -98,7 +98,7 @@
 
         public override QBuilder Then()
         {
-            DataValidator.EvaluateImmediate(() => QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(BeginInnerJoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
+            DataValidator.EvaluateImmediate(QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(BeginInnerJoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
             return base.Then();
         }
 
@@ -315,7 +315,7 @@
             {
                 default:
                     var joinTypeIsUnsupported = true;
-                    DataValidator.EvaluateImmediate(() => joinTypeIsUnsupported, $"Unsupported join type '{joinDescription.JoinType}'");
+                    DataValidator.EvaluateImmediate(joinTypeIsUnsupported, $"Unsupported join type '{joinDescription.JoinType}'");
                     break;
 
                 case JoinTypes.Full:

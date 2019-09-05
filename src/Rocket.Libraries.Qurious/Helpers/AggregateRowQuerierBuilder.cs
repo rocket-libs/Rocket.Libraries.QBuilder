@@ -138,9 +138,9 @@
         private void FailIfInvalid()
         {
             new DataValidator()
-                .AddFailureCondition(() => string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
-                .AddFailureCondition(() => string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
-                .AddFailureCondition(() => string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
                 .ThrowExceptionOnInvalidRules();
         }
 
