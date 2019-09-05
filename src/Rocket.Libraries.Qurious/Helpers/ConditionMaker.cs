@@ -7,7 +7,7 @@
     {
         public string GetCondition(FilterOperator op, object value)
         {
-            new DataValidator().EvaluateImmediate(() => value == null, $"No value was provided for filter");
+            new DataValidator().EvaluateImmediate(value == null, $"No value was provided for filter");
             var sqlOperator = GetSqlOperator(op);
             var conditionTemplate = GetConditionTemplate(op);
             var condition = $" {sqlOperator} {string.Format(CultureInfo.InvariantCulture, conditionTemplate, value)}";
@@ -19,7 +19,7 @@
             switch (op)
             {
                 default:
-                    new DataValidator().EvaluateImmediate(() => true, $"Unknown operator '{op}'. Cannot build filter");
+                    new DataValidator().EvaluateImmediate(true, $"Unknown operator '{op}'. Cannot build filter");
                     return string.Empty;
 
                 case FilterOperator.LessThan:
@@ -56,7 +56,7 @@
             switch (op)
             {
                 default:
-                    new DataValidator().EvaluateImmediate(() => true, $"Unknown operator '{op}'. Cannot build filter");
+                    new DataValidator().EvaluateImmediate(true, $"Unknown operator '{op}'. Cannot build filter");
                     return string.Empty;
 
                 case FilterOperator.LessThan:

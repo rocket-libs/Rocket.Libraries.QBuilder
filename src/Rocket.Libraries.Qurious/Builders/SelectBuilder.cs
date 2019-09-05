@@ -97,7 +97,7 @@
 
         internal string Build()
         {
-            new DataValidator().EvaluateImmediate(() => _selects.Count == 0, "There are no fields queued for selection. Nothing to return");
+            new DataValidator().EvaluateImmediate(_selects.Count == 0, "There are no fields queued for selection. Nothing to return");
 
             var selects = "Select ";
             if (_top.HasValue)
@@ -117,7 +117,7 @@
 
             foreach (var selectDescription in _selects)
             {
-                new DataValidator().EvaluateImmediate(() => TableNotKnown(selectDescription.Table), $"Table '{selectDescription.Table}' has not been queued as a datasource. Cannot show fields from it");
+                new DataValidator().EvaluateImmediate(TableNotKnown(selectDescription.Table), $"Table '{selectDescription.Table}' has not been queued as a datasource. Cannot show fields from it");
                 var tableName = GetTableName(selectDescription);
 
                 var qualifiedField = $"{tableName}.{selectDescription.Field}";

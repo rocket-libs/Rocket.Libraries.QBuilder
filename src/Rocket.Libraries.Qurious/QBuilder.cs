@@ -138,7 +138,7 @@
 
         public string Build()
         {
-            DataValidator.EvaluateImmediate(() => string.IsNullOrEmpty(FirstTableName), "There are no tables queued for data querying. Nothing to return");
+            DataValidator.EvaluateImmediate(string.IsNullOrEmpty(FirstTableName), "There are no tables queued for data querying. Nothing to return");
 
             var query = UseSelector().Build()
                 + UseJoiner().Build()
