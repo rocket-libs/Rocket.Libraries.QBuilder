@@ -151,18 +151,18 @@
             return suffixedQuery.Trim();
         }
 
-        [Obsolete("Clumsy. don't use. Instead use the 'UseDerivedTableJoiner' in the Joiner(s)")]
-        public JoinBuilder FinishJoinToDerivedTable()
-        {
-            var noInnerDescription = InnerSelectDescription == null;
+        /* [Obsolete("Clumsy. don't use. Instead use the 'UseDerivedTableJoiner' in the Joiner(s)")]
+         public JoinBuilder FinishJoinToDerivedTable()
+         {
+             var noInnerDescription = InnerSelectDescription == null;
 
-            if (noInnerDescription)
-            {
-                throw new Exception($"You are not in a '{nameof(JoinBuilder.BeginInnerJoinToDerivedTable)}' section. Did you mean to call '{nameof(JoinBuilder.Then)}' instead?");
-            }
+             if (noInnerDescription)
+             {
+                 throw new Exception($"You are not in a '{nameof(JoinBuilder.BeginInnerJoinToDerivedTable)}' section. Did you mean to call '{nameof(JoinBuilder.Then)}' instead?");
+             }
 
-            return InnerSelectDescription.Parent;
-        }
+             return InnerSelectDescription.Parent;
+         }*/
 
         private string GetWrappedInSelectAlias(string query)
         {

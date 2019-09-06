@@ -6,7 +6,7 @@ namespace Rocket.Libraries.QuriousTests
 {
     public class SelectBuilderTests
     {
-        [Fact]
+        /*[Fact]
         public void DerivedTableSelect()
         {
             var query = new QBuilder()
@@ -28,6 +28,6 @@ namespace Rocket.Libraries.QuriousTests
                 .Then()
                 .Build();
             Assert.True(true);
-        }
+        }*/
     }
 }
