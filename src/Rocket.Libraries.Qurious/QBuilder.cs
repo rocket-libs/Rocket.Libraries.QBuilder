@@ -1,24 +1,24 @@
 ﻿namespace Rocket.Libraries.Qurious
 {
-    using System;
     using Rocket.Libraries.Qurious.Builders;
     using Rocket.Libraries.Qurious.Builders.Paging;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
+    using System;
 
-    public class QBuilder
+    public class QBuilder : IDisposable
     {
-        private readonly SelectBuilder _selectBuilder;
+        private SelectBuilder _selectBuilder;
 
-        private readonly OrderBuilder _orderBuilder;
+        private OrderBuilder _orderBuilder;
 
-        private readonly JoinBuilder _joinBuilder;
+        private JoinBuilder _joinBuilder;
 
-        private readonly WhereBuilder _whereBuilder;
+        private WhereBuilder _whereBuilder;
 
-        internal readonly string _aliasTableName;
+        internal string _aliasTableName;
 
-        private readonly GroupBuilder _groupBuilder;
+        private GroupBuilder _groupBuilder;
 
         private string _suffix;
 
@@ -207,5 +207,51 @@
                 return base.ToString();
             }
         }
+
+        #region IDisposable Support
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    _selectBuilder = null;
+                    _orderBuilder = null;
+                    _joinBuilder = null;
+                    _whereBuilder = null;
+                    _aliasTableName = string.Empty;
+                    _groupBuilder = null;
+                    _suffix = string.Empty;
+                    TableNameResolver = null;
+                    TableNameAliaser = null;
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~QBuilder() {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+
+        #endregion IDisposable Support
     }
 }

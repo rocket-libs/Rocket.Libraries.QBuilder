@@ -1,7 +1,7 @@
 ﻿namespace Rocket.Libraries.Qurious.Helpers
 {
-    using System.Globalization;
     using Rocket.Libraries.Validation.Services;
+    using System.Globalization;
 
     internal class ConditionMaker
     {
