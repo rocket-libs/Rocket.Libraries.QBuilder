@@ -18,7 +18,7 @@
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
             var tableName = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(page, pageSize);
-            QBuilder.SetSuffix($"Limit {tableName}.{fieldName} {range.Start},{range.End}");
+            QBuilder.SetSuffix($"Limit {range.Start},{range.End}");
             return QBuilder;
         }
     }
