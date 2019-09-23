@@ -16,8 +16,9 @@
         public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, int page, int pageSize)
         {
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
+            var tableName = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(page, pageSize);
-            QBuilder.SetSuffix($"Limit {fieldName} {range.Start},{range.End}");
+            QBuilder.SetSuffix($"Limit {tableName}.{fieldName} {range.Start},{range.End}");
             return QBuilder;
         }
     }
