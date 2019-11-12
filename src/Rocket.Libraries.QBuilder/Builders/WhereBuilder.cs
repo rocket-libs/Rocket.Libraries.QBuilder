@@ -10,8 +10,11 @@
     public class WhereBuilder : BuilderBase
     {
         private List<WhereDescription> _wheres = new List<WhereDescription>();
+
         private FieldNameResolver _fieldNameResolver;
+
         private string _nextConjuntion = "And";
+
         private WhereConjuntionBuilder _whereConjunctionBuilder;
 
         private List<ParenthesesDescription> _parentheses = new List<ParenthesesDescription>();
@@ -52,7 +55,7 @@
 
         public WhereBuilder OpenParentheses()
         {
-            new DataValidator().EvaluateImmediate(() => CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
+            new DataValidator().EvaluateImmediate(CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
             _parentheses.Add(new ParenthesesDescription
             {
                 Closed = false,
@@ -64,7 +67,7 @@
         public WhereBuilder CloseParentheses()
         {
             var noOpenParentheses = CurrentParentheses == null || CurrentParentheses.Id == _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
+            new DataValidator().EvaluateImmediate(noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
             CurrentParentheses.Closed = true;
             return this;
         }
@@ -100,7 +103,7 @@
 
         public WhereConjuntionBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
         {
-            var criteria = GetWhereInSectionArguments(values);
+            var criteria = WhereInFilterMaker.GetWhereInSectionArguments(values);
 
             if (string.IsNullOrEmpty(criteria))
             {
@@ -112,7 +115,7 @@
             }
         }
 
-        [Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
+        /*[Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
         public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnIfTrue)
         {
             if (fnIfTrue())
@@ -123,7 +126,7 @@
             {
                 return _whereConjunctionBuilder;
             }
-        }
+        }*/
 
         /// <summary>
         /// This method only injects a where filter if the <paramref name="fnResolveCondition"/> does not resolve to String.Empty
@@ -166,7 +169,7 @@
         {
             var where = string.Empty;
             var unClosedParenthesesExists = CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(() => unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
+            new DataValidator().EvaluateImmediate(unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
             var currentParenthesesId = _implicitParentheses.Id;
 
             foreach (var whereDescription in _wheres)
@@ -216,26 +219,8 @@
             {
                 where += ") ";
             }
-            return where;
-        }
 
-        private string GetWhereInSectionArguments<TValueType>(List<TValueType> values)
-        {
-            if (values == null)
-            {
-                throw new Exception("Cannot build a where clause from an null list of values");
-            }
-            if (values.Count == 0)
-            {
-                return string.Empty;
-            }
-            var args = string.Empty;
-            foreach (var value in values)
-            {
-                args += $",'{value}'";
-            }
-            args = $"({args.Substring(1)})";
-            return args;
+            return where;
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿namespace Rocket.Libraries.Qurious.Helpers
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq.Expressions;
+    using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
 
     public class AggregateRowQuerierBuilder<THistoricalTable>
     {
-        private const string LatestVersion = "LatestVersion";
-
-        private object _groupingValue;
+        public const string LatestVersion = "LatestVersion";
 
         private string _foreignKeyName;
 
@@ -76,9 +76,27 @@
             return this;
         }
 
-        public AggregateRowQuerierBuilder<THistoricalTable> SetGroupingValue<TValue>(TValue groupingValue)
+        public AggregateRowQuerierBuilder<THistoricalTable> AddWhereEqualsToFilter<TField>(Expression<Func<THistoricalTable, TField>> fieldNameDescriptor, object value)
         {
-            _groupingValue = groupingValue;
+            var filterDescription = new FilterDescription<THistoricalTable>()
+                .SetWhereEqualToFilter(fieldNameDescriptor, value);
+            return AddArbitraryFilter(filterDescription);
+        }
+
+        public AggregateRowQuerierBuilder<THistoricalTable> AddWhereInFilter<TField, TValueType>(Expression<Func<THistoricalTable, TField>> fieldNameDescriptor, List<TValueType> listItems)
+        {
+            var filterDescription = new FilterDescription<THistoricalTable>()
+                .SetWhereInFilter(fieldNameDescriptor, listItems);
+            return AddArbitraryFilter(filterDescription);
+        }
+
+        public AggregateRowQuerierBuilder<THistoricalTable> AddArbitraryFilter(FilterDescription<THistoricalTable> filterDescription)
+        {
+            InnerQBuilder.UseTableBoundFilter<THistoricalTable>()
+                .Where(filterDescription);
+
+            ResultQbuilder.UseTableBoundFilter<THistoricalTable>()
+                .Where(filterDescription);
             return this;
         }
 
@@ -103,21 +121,16 @@
              .Select<THistoricalTable>(_foreignKeyName)
              .SelectAggregated<THistoricalTable>(_incrementingFieldName, LatestVersion, _aggregationFunction)
              .Then()
-             .UseFilter()
-             .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo, _groupingValue)
-             .Then()
              .UseGrouper()
              .GroupBy<THistoricalTable>(_foreignKeyName);
 
             ResultQbuilder
                 .UseSelector()
                 .Select<THistoricalTable>("*")
-                .Then()
-                .UseFilter()
-                .Where<THistoricalTable>(_foreignKeyName, FilterOperator.EqualTo, _groupingValue)
                 .Then();
 
             _doDerivedTableJoin();
+
             _doDerivedTableJoin = null;
             return ResultQbuilder;
         }
@@ -125,10 +138,9 @@
         private void FailIfInvalid()
         {
             new DataValidator()
-                .AddFailureCondition(() => _groupingValue == null, "No grouping value was specified, cannot generate query as can't tell which records qualify for comparison.", false)
-                .AddFailureCondition(() => string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
-                .AddFailureCondition(() => string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
-                .AddFailureCondition(() => string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_foreignKeyName), $"Foreign key was not specified, cannot determine how to identify records to compare.", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_incrementingFieldName), $"Cannot determine which field is being incremented. No way to tell which record is the latest.", false)
+                .AddFailureCondition(string.IsNullOrEmpty(_aggregationFunction), $"No aggregate function specified. Cannot query database", false)
                 .ThrowExceptionOnInvalidRules();
         }
 

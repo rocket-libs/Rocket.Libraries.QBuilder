@@ -17,8 +17,8 @@ namespace Rocket.Libraries.Qurious.Builders.Paging
         public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, int page, int pageSize)
         {
             new DataValidator()
-                .AddFailureCondition(() => page < 1, $"Database query requested for page '{page}'. Pages must be greater than or equal to 1", false)
-                .AddFailureCondition(() => pageSize < 1, $"Pages must have at least one record. Page size '{pageSize}' is not valid", false)
+                .AddFailureCondition(page < 1, $"Database query requested for page '{page}'. Pages must be greater than or equal to 1", false)
+                .AddFailureCondition(pageSize < 1, $"Pages must have at least one record. Page size '{pageSize}' is not valid", false)
                 .ThrowExceptionOnInvalidRules();
             const string rowNumber = "RowNumber";
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
