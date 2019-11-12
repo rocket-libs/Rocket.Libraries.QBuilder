@@ -115,7 +115,7 @@
             }
         }
 
-        [Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
+        /*[Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
         public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnIfTrue)
         {
             if (fnIfTrue())
@@ -126,7 +126,7 @@
             {
                 return _whereConjunctionBuilder;
             }
-        }
+        }*/
 
         /// <summary>
         /// This method only injects a where filter if the <paramref name="fnResolveCondition"/> does not resolve to String.Empty

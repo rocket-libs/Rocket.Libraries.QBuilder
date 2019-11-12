@@ -81,7 +81,7 @@
             return this;
         }
 
-        [Obsolete("This is an awfully painful way of joining to derived tables. Use DerivedTableJoiner instead")]
+        /*[Obsolete("This is an awfully painful way of joining to derived tables. Use DerivedTableJoiner instead")]
         public QBuilder BeginInnerJoinToDerivedTable(string derivedTableName, string innerField, string field)
         {
             InnerSelectDescription = new InnerSelectDescription
@@ -94,11 +94,11 @@
             };
             InnerSelectDescription.QBuilder.InnerSelectDescription = InnerSelectDescription;
             return InnerSelectDescription.QBuilder;
-        }
+        }*/
 
         public override QBuilder Then()
         {
-            DataValidator.EvaluateImmediate(QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(BeginInnerJoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
+            //DataValidator.EvaluateImmediate(QBuilder.InnerSelectDescription != null, $"You are currently in a '{nameof(BeginInnerJoinToDerivedTable)}' section. Please call '{nameof(QBuilder.FinishJoinToDerivedTable)}' instead");
             return base.Then();
         }
 
