@@ -115,18 +115,19 @@
             }
         }
 
-        /*[Obsolete("Is limiting in that it presumes the 'condition' parameter can be added before evaluation the 'fnIfTrue' function param. In some cases this causes exceptions. Use 'OptionalWhere' instead and return an empty string for instances where the filter is to be left out ")]
-        public WhereConjuntionBuilder ConditionalWhere<TTable>(string field, string condition, Func<bool> fnIfTrue)
+        public WhereConjuntionBuilder WhereNotIn<TTable, TValueType>(string field, List<TValueType> values)
         {
-            if (fnIfTrue())
-            {
-                return Where<TTable>(field, condition);
-            }
-            else
+            var criteria = WhereInFilterMaker.GetWhereInSectionArguments(values);
+
+            if (string.IsNullOrEmpty(criteria))
             {
                 return _whereConjunctionBuilder;
             }
-        }*/
+            else
+            {
+                return Where<TTable>(field, $" not in {criteria}");
+            }
+        }
 
         /// <summary>
         /// This method only injects a where filter if the <paramref name="fnResolveCondition"/> does not resolve to String.Empty
