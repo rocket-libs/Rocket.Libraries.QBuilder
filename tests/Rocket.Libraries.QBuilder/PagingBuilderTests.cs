@@ -1,14 +1,14 @@
-﻿using Rocket.Libraries.Qurious;
-using Rocket.Libraries.Qurious.Builders.Paging;
-using Rocket.Libraries.Qurious.Models;
-using Rocket.Libraries.QuriousTests.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
-
-namespace Rocket.Libraries.QuriousTests
+﻿namespace Rocket.Libraries.QuriousTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using Rocket.Libraries.Qurious;
+    using Rocket.Libraries.Qurious.Builders.Paging;
+    using Rocket.Libraries.Qurious.Models;
+    using Rocket.Libraries.QuriousTests.Models;
+    using Xunit;
+
     public class PagingBuilderTests
     {
         [Fact]
@@ -37,17 +37,39 @@ namespace Rocket.Libraries.QuriousTests
         [InlineData(4, 43, 56)]
         [InlineData(5, 57, 70)]
         [InlineData(6, 71, 84)]
-        public void PageRangeCalculatedCorrectly(int page, int start, int end)
+        public void PageRangeCalculatedCorrectlyForSqlServer(uint page, int start, int end)
         {
-            const int pageSize = 14;
-            var actual = PageRangeCalculator.GetPageRange(page, pageSize);
+            const ushort pageSize = 14;
+            var actual = PageRangeCalculator.GetPageRange(1, page, pageSize);
             var expected = new PageRange
             {
                 Start = start,
+                PageSize = pageSize,
                 End = end
             };
 
             Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(1, 0)]
+        [InlineData(2, 14)]
+        [InlineData(3, 28)]
+        [InlineData(4, 42)]
+        [InlineData(5, 56)]
+        [InlineData(6, 70)]
+        public void PageRangeCalculatedCorrectlyForMariaDb(uint page, int start)
+        {
+            const ushort pageSize = 14;
+            var actual = PageRangeCalculator.GetPageRange(0, page, pageSize);
+            var expected = new PageRange
+            {
+                Start = start,
+                PageSize = pageSize
+            };
+
+            Assert.Equal(expected.Start, actual.Start);
+            Assert.Equal(expected.PageSize, pageSize);
         }
     }
 }
