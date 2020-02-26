@@ -18,6 +18,11 @@ namespace Rocket.Libraries.Qurious.Helpers
                 throw new Exception("No list of values provided. Exception is being thrown, as this condition is ambiguous, and going ahead would likely produce an unpredictable result.");
             }
 
+            using(var uniqueValueResolver = new UniqueValueResolver<TValueType>())
+            {
+                values = uniqueValueResolver.GetUnique(values);
+            }
+
             var args = string.Empty;
             foreach (var value in values)
             {
