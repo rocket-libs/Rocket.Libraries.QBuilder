@@ -42,6 +42,12 @@ namespace Rocket.Libraries.Qurious.Builders
             return _whereBuilder.WhereIn<TTable, TValueType>(fieldName, values);
         }
 
+        public WhereConjuntionBuilder WhereNotIn<TField, TValueType>(Expression<Func<TTable, TField>> fieldNameDescriptor, List<TValueType> values)
+        {
+            var fieldName = _fieldNameResolver.GetFieldName(fieldNameDescriptor);
+            return _whereBuilder.WhereNotIn<TTable, TValueType>(fieldName, values);
+        }
+
         public WhereConjuntionBuilder OptionalWhere<TField>(Expression<Func<TTable, TField>> fieldNameDescriptor, Func<string> fnResolveCondition)
         {
             var fieldName = _fieldNameResolver.GetFieldName(fieldNameDescriptor);
