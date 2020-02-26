@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Rocket.Libraries.Qurious\Rocket.Libraries.QBuilder.csproj" />
+    <ProjectReference Include="..\..\src\Rocket.Libraries.QBuilder\Rocket.Libraries.QBuilder.csproj" />
   </ItemGroup>
 
   <ItemGroup>
