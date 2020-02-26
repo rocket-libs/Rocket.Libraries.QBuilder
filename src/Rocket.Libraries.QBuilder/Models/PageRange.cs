@@ -6,9 +6,11 @@
 
     public class PageRange
     {
-        public int Start { get; set; }
+        public long Start { get; set; }
 
-        public int End { get; set; }
+        public long End { get; set; }
+
+        public ushort PageSize { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -19,7 +21,8 @@
             }
 
             return inputObject.Start == Start
-                && inputObject.End == End;
+                && inputObject.End == End
+                && inputObject.PageSize == PageSize;
         }
 
         public override int GetHashCode()

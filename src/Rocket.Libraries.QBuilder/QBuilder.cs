@@ -106,14 +106,20 @@
             return new DerivedTableSelector(derivedTable, _selectBuilder);
         }
 
-        public SqlServerPagingBuilder<TTable> UseSqlServerPagingBuilder<TTable>()
+        public IPagingBuilder<TTable> UseSqlServerPagingBuilder<TTable>()
         {
-            return new SqlServerPagingBuilder<TTable>(this);
+            return UsePagingBuilder<TTable, SqlServerPagingBuilder<TTable>>(new SqlServerPagingBuilder<TTable>(this));
         }
 
-        public MySqlServerPagingBuilder<TTable> UseMySqlServerPagingBuilder<TTable>()
+        public IPagingBuilder<TTable> UseMySqlServerPagingBuilder<TTable>()
         {
-            return new MySqlServerPagingBuilder<TTable>(this);
+            return UsePagingBuilder<TTable, MySqlServerPagingBuilder<TTable>>(new MySqlServerPagingBuilder<TTable>(this));
+        }
+
+        public IPagingBuilder<TTable> UsePagingBuilder<TTable, TBuilderPagingBuilder>(TBuilderPagingBuilder pagingBuilder)
+            where TBuilderPagingBuilder : BuilderBase, IPagingBuilder<TTable>
+        {
+            return pagingBuilder;
         }
 
         public JoinBuilder UseJoiner()
