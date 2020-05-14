@@ -4,14 +4,19 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Version>6.0.0</Version>
     <PackageId>Rocket.Libraries.QBuilder</PackageId>
-    <Authors>Rocket Libraries</Authors>
     <Product>Rocket.Libraries.QBuilder</Product>
     <AssemblyName>Rocket.Libraries.QBuilder</AssemblyName>
     <RootNamespace>Rocket.Libraries.QBuilder</RootNamespace>
     <CodeAnalysisRuleSet>../../rocket.rules.ruleset</CodeAnalysisRuleSet>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Company>Rocket LibrariesRocket Libraries</Company>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/rocket-libs/Rocket.Libraries.DatabaseIntegrator</RepositoryUrl>
+    <Authors>Nyingi Maina</Authors>
+    <Company>Rocket Libraries</Company>
+    <PackageDescription>Helper library for querying databases from C#</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
