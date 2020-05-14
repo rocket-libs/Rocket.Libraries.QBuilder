@@ -1,15 +1,15 @@
 ﻿namespace Rocket.Libraries.Qurious.Builders
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System;
     using Rocket.Libraries.Qurious.Helpers;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
 
     public class WhereBuilder : BuilderBase
     {
-        private List<WhereDescription> _wheres = new List<WhereDescription>();
+        private List<WhereDescription> _wheres = new List<WhereDescription> ();
 
         private FieldNameResolver _fieldNameResolver;
 
@@ -17,18 +17,18 @@
 
         private WhereConjuntionBuilder _whereConjunctionBuilder;
 
-        private List<ParenthesesDescription> _parentheses = new List<ParenthesesDescription>();
+        private List<ParenthesesDescription> _parentheses = new List<ParenthesesDescription> ();
 
         private ParenthesesDescription _implicitParentheses = new ParenthesesDescription
         {
-            Id = default(Guid)
+            Id = default (Guid)
         };
 
         private ParenthesesDescription CurrentParentheses
         {
             get
             {
-                var explicitParentheses = _parentheses.LastOrDefault(a => a.Closed == false);
+                var explicitParentheses = _parentheses.LastOrDefault (a => a.Closed == false);
                 var hasExplicitedParentheses = explicitParentheses != null;
                 if (hasExplicitedParentheses)
                 {
@@ -41,42 +41,41 @@
             }
         }
 
-        public WhereBuilder(QBuilder qBuilder)
-            : base(qBuilder)
+        public WhereBuilder (QBuilder qBuilder) : base (qBuilder)
         {
-            _whereConjunctionBuilder = new WhereConjuntionBuilder(this, qBuilder);
-            _fieldNameResolver = new FieldNameResolver();
+            _whereConjunctionBuilder = new WhereConjuntionBuilder (this, qBuilder);
+            _fieldNameResolver = new FieldNameResolver ();
         }
 
-        public WhereConjuntionBuilder UseConjunction()
+        public WhereConjuntionBuilder UseConjunction ()
         {
             return _whereConjunctionBuilder;
         }
 
-        public WhereBuilder OpenParentheses()
+        public WhereBuilder OpenParentheses ()
         {
-            new DataValidator().EvaluateImmediate(CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
-            _parentheses.Add(new ParenthesesDescription
+            new DataValidator ().EvaluateImmediate (CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id, "Nested parentheses are not yet supported.");
+            _parentheses.Add (new ParenthesesDescription
             {
                 Closed = false,
-                Id = Guid.NewGuid()
+                    Id = Guid.NewGuid ()
             });
             return this;
         }
 
-        public WhereBuilder CloseParentheses()
+        public WhereBuilder CloseParentheses ()
         {
             var noOpenParentheses = CurrentParentheses == null || CurrentParentheses.Id == _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
+            new DataValidator ().EvaluateImmediate (noOpenParentheses, "There is currently no open parentheses. Nothing to close.");
             CurrentParentheses.Closed = true;
             return this;
         }
 
-        public WhereConjuntionBuilder Where<TTable>(FilterDescription<TTable> filterDescription)
+        public WhereConjuntionBuilder Where<TTable> (FilterDescription<TTable> filterDescription)
         {
             if (filterDescription.FilterSet)
             {
-                return Where<TTable>(filterDescription.FieldName, filterDescription.Filter);
+                return Where<TTable> (filterDescription.FieldName, filterDescription.Filter);
             }
             else
             {
@@ -84,48 +83,53 @@
             }
         }
 
-        public WhereConjuntionBuilder Where<TTable>(string field, FilterOperator op, object value)
+        public WhereConjuntionBuilder Where<TTable> (string field, FilterOperator op, object value)
         {
-            var condition = new ConditionMaker().GetCondition(op, value);
-            return Where<TTable>(field, condition);
+            var condition = new ConditionMaker ().GetCondition (op, value);
+            return Where<TTable> (field, condition);
         }
 
-        public WhereConjuntionBuilder Where<TTable>(string field, string condition)
+        public WhereConjuntionBuilder Where<TTable> (string field, string condition)
         {
-            _wheres.Add(new WhereDescription
+            return Where (typeof (TTable), field, condition);
+        }
+
+        public WhereConjuntionBuilder Where (Type tableType, string field, string condition)
+        {
+            _wheres.Add (new WhereDescription
             {
-                Clause = $"{QBuilder.TableNameAliaser.GetTableAlias(QBuilder.TableNameResolver(typeof(TTable)))}.{field} {condition}",
-                Conjunction = _nextConjuntion,
-                ParenthesesId = CurrentParentheses.Id,
+                Clause = $"{QBuilder.TableNameAliaser.GetTableAlias(QBuilder.TableNameResolver(tableType))}.{field} {condition}",
+                    Conjunction = _nextConjuntion,
+                    ParenthesesId = CurrentParentheses.Id,
             });
             return _whereConjunctionBuilder;
         }
 
-        public WhereConjuntionBuilder WhereIn<TTable, TValueType>(string field, List<TValueType> values)
+        public WhereConjuntionBuilder WhereIn<TTable, TValueType> (string field, List<TValueType> values)
         {
-            var criteria = WhereInFilterMaker.GetWhereInSectionArguments(values);
+            var criteria = WhereInFilterMaker.GetWhereInSectionArguments (values);
 
-            if (string.IsNullOrEmpty(criteria))
+            if (string.IsNullOrEmpty (criteria))
             {
                 return _whereConjunctionBuilder;
             }
             else
             {
-                return Where<TTable>(field, $" in {criteria}");
+                return Where<TTable> (field, $" in {criteria}");
             }
         }
 
-        public WhereConjuntionBuilder WhereNotIn<TTable, TValueType>(string field, List<TValueType> values)
+        public WhereConjuntionBuilder WhereNotIn<TTable, TValueType> (string field, List<TValueType> values)
         {
-            var criteria = WhereInFilterMaker.GetWhereInSectionArguments(values);
+            var criteria = WhereInFilterMaker.GetWhereInSectionArguments (values);
 
-            if (string.IsNullOrEmpty(criteria))
+            if (string.IsNullOrEmpty (criteria))
             {
                 return _whereConjunctionBuilder;
             }
             else
             {
-                return Where<TTable>(field, $" not in {criteria}");
+                return Where<TTable> (field, $" not in {criteria}");
             }
         }
 
@@ -136,13 +140,13 @@
         /// <param name="field">The field to filter on</param>
         /// <param name="fnResolveCondition">A function which when executed returns either a valid SQL filter or String.Empty. If String.Empty is returned, no where filter is injected and conversely, an filter is injected if a valid SQL filter is returned</param>
         /// <returns>Instance of <see cref="WhereConjuntionBuilder"/> to allow chaining of filter calls</returns>
-        public WhereConjuntionBuilder OptionalWhere<TTable>(string field, Func<string> fnResolveCondition)
+        public WhereConjuntionBuilder OptionalWhere<TTable> (string field, Func<string> fnResolveCondition)
         {
-            var condition = fnResolveCondition();
-            var conditionExists = string.IsNullOrEmpty(condition) == false;
+            var condition = fnResolveCondition ();
+            var conditionExists = string.IsNullOrEmpty (condition) == false;
             if (conditionExists)
             {
-                return Where<TTable>(field, condition);
+                return Where<TTable> (field, condition);
             }
             else
             {
@@ -150,27 +154,27 @@
             }
         }
 
-        public WhereConjuntionBuilder WhereExplicitly(string criteria)
+        public WhereConjuntionBuilder WhereExplicitly (string criteria)
         {
-            _wheres.Add(new WhereDescription
+            _wheres.Add (new WhereDescription
             {
                 Clause = criteria,
-                Conjunction = _nextConjuntion,
-                ParenthesesId = CurrentParentheses.Id,
+                    Conjunction = _nextConjuntion,
+                    ParenthesesId = CurrentParentheses.Id,
             });
             return _whereConjunctionBuilder;
         }
 
-        internal void SetNextConjunction(string conjunction)
+        internal void SetNextConjunction (string conjunction)
         {
             _nextConjuntion = conjunction;
         }
 
-        internal string Build()
+        internal string Build ()
         {
             var where = string.Empty;
             var unClosedParenthesesExists = CurrentParentheses != null && CurrentParentheses.Id != _implicitParentheses.Id;
-            new DataValidator().EvaluateImmediate(unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
+            new DataValidator ().EvaluateImmediate (unClosedParenthesesExists, $"An unclosed parentheses was found. Please check your query.");
             var currentParenthesesId = _implicitParentheses.Id;
 
             foreach (var whereDescription in _wheres)
@@ -183,7 +187,7 @@
                     where += ")";
                 }
 
-                if (!string.IsNullOrEmpty(where))
+                if (!string.IsNullOrEmpty (where))
                 {
                     where += $" {whereDescription.Conjunction} ";
                 }
@@ -200,10 +204,10 @@
                 where += $"{whereDescription.Clause}{Environment.NewLine}";
             }
 
-            where = GetWithFinalParenthesesTerminatedIfRequired(currentParenthesesId, where);
+            where = GetWithFinalParenthesesTerminatedIfRequired (currentParenthesesId, where);
 
-            _wheres = new List<WhereDescription>();
-            if (string.IsNullOrEmpty(where))
+            _wheres = new List<WhereDescription> ();
+            if (string.IsNullOrEmpty (where))
             {
                 return string.Empty;
             }
@@ -213,7 +217,7 @@
             }
         }
 
-        private string GetWithFinalParenthesesTerminatedIfRequired(Guid currentParenthesesId, string where)
+        private string GetWithFinalParenthesesTerminatedIfRequired (Guid currentParenthesesId, string where)
         {
             var hasUnterminatedParentheses = currentParenthesesId != _implicitParentheses.Id;
             if (hasUnterminatedParentheses)
