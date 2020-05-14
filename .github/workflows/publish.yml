@@ -23,6 +23,6 @@ jobs:
 
       - name: Build solution and generate NuGet package
         run: |  
-          cd Rocket.Libraries.QBuilder
+          cd src/Rocket.Libraries.QBuilder
           dotnet pack -c Release -o out  
           dotnet nuget push ./out/*.nupkg -k ${{secrets.Nuget_Key}} -s https://api.nuget.org/v3/index.json
