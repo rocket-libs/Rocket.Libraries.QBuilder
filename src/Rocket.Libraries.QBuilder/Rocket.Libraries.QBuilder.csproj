@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/rocket-libs/Rocket.Libraries.DatabaseIntegrator</RepositoryUrl>
+    <RepositoryUrl>https://github.com/rocket-libs/Rocket.Libraries.QBuilder</RepositoryUrl>
     <Authors>Nyingi Maina</Authors>
     <Company>Rocket Libraries</Company>
     <PackageDescription>Helper library for querying databases from C#</PackageDescription>
