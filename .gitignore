@@ -259,3 +259,4 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+src/Rocket.Libraries.QBuilder/out/Rocket.Libraries.QBuilder.dll
