@@ -16,7 +16,7 @@
 
         public byte AbsoluteFirstRecordIndex => 1;
 
-        public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, uint page, ushort pageSize)
+        public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, uint page, ushort pageSize, bool orderAscending = true)
         {
             new DataValidator()
                 .AddFailureCondition(page < 1, $"Database query requested for page '{page}'. Pages must be greater than or equal to 1", false)
@@ -30,7 +30,8 @@
                  .SetSelectPrefix($"ROW_NUMBER() OVER (ORDER BY [{table}].[{fieldName}]) AS {rowNumber},")
                  .Then()
                  .UseFilter();
-            QBuilder.SetSuffix($"Where {rowNumber} >= {range.Start} AND {rowNumber} <= {range.End} ORDER BY {rowNumber}");
+            string orderSuffix = orderAscending ? "Asc" : "Desc";
+            QBuilder.SetSuffix($"Where {rowNumber} >= {range.Start} AND {rowNumber} <= {range.End} ORDER BY {rowNumber} {orderSuffix}");
             return QBuilder;
         }
     }

@@ -13,13 +13,21 @@
         {
         }
 
-        public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, uint page, ushort pageSize)
+        public QBuilder PageBy<TField>(Expression<Func<TTable, TField>> fieldNameDescriber, uint page, ushort pageSize, bool orderAscending = true)
         {
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
             var tableName = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(0, page, pageSize);
-            QBuilder.UseOrdering()
-                .OrderBy<TTable>(fieldName);
+            if (orderAscending)
+            {
+                QBuilder.UseOrdering()
+                    .OrderBy<TTable>(fieldName);
+            }
+            else
+            {
+                QBuilder.UseOrdering()
+                    .OrderByDescending<TTable>(fieldName);
+            }
             QBuilder.SetSuffix($"Limit {range.Start},{range.PageSize}");
             return QBuilder;
         }
