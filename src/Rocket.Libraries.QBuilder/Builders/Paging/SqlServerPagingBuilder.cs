@@ -23,15 +23,16 @@
                 .AddFailureCondition(pageSize < 1, $"Pages must have at least one record. Page size '{pageSize}' is not valid", false)
                 .ThrowExceptionOnInvalidRules();
             const string rowNumber = "RowNumber";
+            string orderSuffix = orderAscending ? "Asc" : "Desc";
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
             var table = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(AbsoluteFirstRecordIndex, page, pageSize);
             QBuilder.UseSelector()
-                 .SetSelectPrefix($"ROW_NUMBER() OVER (ORDER BY [{table}].[{fieldName}]) AS {rowNumber},")
+                 .SetSelectPrefix($"ROW_NUMBER() OVER (ORDER BY [{table}].[{fieldName}] ${orderSuffix}) AS {rowNumber},")
                  .Then()
                  .UseFilter();
-            string orderSuffix = orderAscending ? "Asc" : "Desc";
-            QBuilder.SetSuffix($"Where {rowNumber} >= {range.Start} AND {rowNumber} <= {range.End} ORDER BY {rowNumber} {orderSuffix}");
+            
+            QBuilder.SetSuffix($"Where {rowNumber} >= {range.Start} AND {rowNumber} <= {range.End}");
             return QBuilder;
         }
     }
