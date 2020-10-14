@@ -28,7 +28,7 @@
             var table = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(AbsoluteFirstRecordIndex, page, pageSize);
             QBuilder.UseSelector()
-                 .SetSelectPrefix($"ROW_NUMBER() OVER (ORDER BY [{table}].[{fieldName}] 6.1.3{orderSuffix}) AS {rowNumber},")
+                 .SetSelectPrefix($"ROW_NUMBER() OVER (ORDER BY [{table}].[{fieldName}] {orderSuffix}) AS {rowNumber},")
                  .Then()
                  .UseFilter();
             
