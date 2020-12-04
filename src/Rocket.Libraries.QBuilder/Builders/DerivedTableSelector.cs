@@ -30,6 +30,12 @@
             return this;
         }
 
+        public DerivedTableSelector SelectExplicit(string field, string fieldAlias, string aggregateFunction)
+        {
+            SelectBuilder.SelectExplicit(TableName, field, fieldAlias, aggregateFunction, true);
+            return this;
+        }
+
         public QBuilder Then()
         {
             return SelectBuilder.Then();
