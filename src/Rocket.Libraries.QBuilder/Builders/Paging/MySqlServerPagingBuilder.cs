@@ -18,7 +18,7 @@
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
             var tableName = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(0, page, pageSize);
-            var orderClause = $"Order By `${fieldName}`";
+            var orderClause = $"Order By `{fieldName}`";
             if (orderAscending)
             {
                 orderClause += " Asc";
