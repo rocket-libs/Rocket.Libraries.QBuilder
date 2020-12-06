@@ -70,7 +70,7 @@
             return SelectExplicit(table, field, fieldAlias, aggregateFunction, false);
         }
 
-        public SelectBuilder SelectExplicit(string table, string field, string fieldAlias, string aggregateFunction, bool preventTableNameAliasing)
+        public SelectBuilder SelectExplicit(string table, string field, string fieldAlias, string aggregateFunction, bool preventTableNameAliasing, bool qualifyFieldWithTableName = true)
         {
             _selects.Add(new SelectDescription
             {
@@ -79,6 +79,7 @@
                 FieldAlias = fieldAlias,
                 AggregateFunction = aggregateFunction,
                 TableNameAliasingPrevented = preventTableNameAliasing,
+                QualifyFieldWithTableName = qualifyFieldWithTableName
             });
             return this;
         }
@@ -120,7 +121,7 @@
                 new DataValidator().EvaluateImmediate(TableNotKnown(selectDescription.Table), $"Table '{selectDescription.Table}' has not been queued as a datasource. Cannot show fields from it");
                 var tableName = GetTableName(selectDescription);
 
-                var qualifiedField = $"{tableName}.{selectDescription.Field}";
+                var qualifiedField = selectDescription.QualifyFieldWithTableName ? $"{tableName}.{selectDescription.Field}" : selectDescription.Field;
                 var finalField = GetAggregatedFieldIfRequired(qualifiedField, selectDescription.AggregateFunction);
                 selects += $"{Environment.NewLine}{finalField}";
                 var hasAlias = !string.IsNullOrEmpty(selectDescription.FieldAlias);

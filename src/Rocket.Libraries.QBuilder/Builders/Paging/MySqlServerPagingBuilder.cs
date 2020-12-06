@@ -18,17 +18,16 @@
             var fieldName = new FieldNameResolver().GetFieldName(fieldNameDescriber);
             var tableName = QBuilder.TableNameAliaser.GetTableAlias<TTable>();
             var range = PageRangeCalculator.GetPageRange(0, page, pageSize);
+            var orderClause = $"Order By `${fieldName}`";
             if (orderAscending)
             {
-                QBuilder.UseOrdering()
-                    .OrderBy<TTable>(fieldName);
+                orderClause += " Asc";
             }
             else
             {
-                QBuilder.UseOrdering()
-                    .OrderByDescending<TTable>(fieldName);
+                orderClause += " Desc";
             }
-            QBuilder.SetSuffix($"Limit {range.Start},{range.PageSize}");
+            QBuilder.SetSuffix($" {orderClause} Limit {range.Start},{range.PageSize}");
             return QBuilder;
         }
     }

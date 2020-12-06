@@ -11,5 +11,7 @@
         public string AggregateFunction { get; set; }
 
         public bool TableNameAliasingPrevented { get; set; }
+
+        public bool QualifyFieldWithTableName { get; set; }
     }
 }

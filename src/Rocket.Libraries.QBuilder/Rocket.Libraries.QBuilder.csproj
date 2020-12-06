@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>6.1.7-beta01</Version>
+    <Version>6.1.7-beta02</Version>
     <PackageId>Rocket.Libraries.QBuilder</PackageId>
     <Product>Rocket.Libraries.QBuilder</Product>
     <AssemblyName>Rocket.Libraries.QBuilder</AssemblyName>
