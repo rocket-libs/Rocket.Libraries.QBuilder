@@ -1,5 +1,6 @@
 ﻿namespace Rocket.Libraries.Qurious
 {
+    using Rocket.Libraries.QBuilder;
     using Rocket.Libraries.Qurious.Builders;
     using Rocket.Libraries.Qurious.Builders.Paging;
     using Rocket.Libraries.Qurious.Models;
@@ -22,19 +23,21 @@
 
         private string _suffix;
 
-        public QBuilder()
-            : this("t")
+        private BuiltQuery builtQuery;
+
+        public QBuilder(bool parameterize)
+            : this("t", parameterize)
 
         {
         }
 
-        public QBuilder(string aliasTablename)
-            : this(t => t.Name, aliasTablename)
+        public QBuilder(string aliasTablename, bool parameterize)
+            : this(t => t.Name, aliasTablename, parameterize)
 
         {
         }
 
-        public QBuilder(Func<Type, string> tableNameResolver, string aliasTablename)
+        public QBuilder(Func<Type, string> tableNameResolver, string aliasTablename, bool parameterize)
         {
             TableNameResolver = tableNameResolver;
             _aliasTableName = aliasTablename;
@@ -42,8 +45,12 @@
             _orderBuilder = new OrderBuilder(this);
             _selectBuilder = new SelectBuilder(this, "t");
             _joinBuilder = new JoinBuilder(this);
-            _whereBuilder = new WhereBuilder(this);
             _groupBuilder = new GroupBuilder(this);
+            if (parameterize)
+            {
+                builtQuery = new BuiltQuery();
+            }
+            _whereBuilder = new WhereBuilder(this, builtQuery);
         }
 
         internal void SetSuffix(string suffix)
@@ -157,6 +164,14 @@
             return suffixedQuery.Trim();
         }
 
+        public BuiltQuery BuildWithParameters()
+        {
+            builtQuery.ParameterizedSql = Build();
+            return builtQuery;
+        }
+
+
+
         private string GetWrappedInSelectAlias(string query)
         {
             var result = $"Select * from ({query}) as {DerivedTableName}";
@@ -220,6 +235,7 @@
                     _suffix = string.Empty;
                     TableNameResolver = null;
                     TableNameAliaser = null;
+
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

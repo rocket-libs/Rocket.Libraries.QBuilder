@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Version>6.1.7-beta03</Version>
+    <Version>6.2.0-beta01</Version>
     <PackageId>Rocket.Libraries.QBuilder</PackageId>
     <Product>Rocket.Libraries.QBuilder</Product>
     <AssemblyName>Rocket.Libraries.QBuilder</AssemblyName>
@@ -20,7 +20,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
     <PackageReference Include="Rocket.Libraries.Validation" Version="2.0.0-beta05" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.6">
       <PrivateAssets>all</PrivateAssets>
