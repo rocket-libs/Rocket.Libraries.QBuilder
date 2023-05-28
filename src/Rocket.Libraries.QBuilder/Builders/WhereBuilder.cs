@@ -122,7 +122,7 @@
                 {
                     var parameterName = ConditionMaker.GetParameterName(field, builtQuery);
                     builtQuery.Parameters.Add(parameterName, criteria);
-                    return Where<TTable>(field, $" in {parameterName}");
+                    return Where<TTable>(field, $" in ({parameterName})");
                 }
                 else
                 {
