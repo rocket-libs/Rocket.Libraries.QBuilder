@@ -6,7 +6,7 @@
     using Rocket.Libraries.Qurious.Helpers;
     using Rocket.Libraries.Qurious.Models;
     using Rocket.Libraries.Validation.Services;
-    using Rocket.Libraries.QBuilder;
+
 
     public class WhereBuilder : BuilderBase
     {

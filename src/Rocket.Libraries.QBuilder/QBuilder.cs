@@ -1,6 +1,6 @@
 ﻿namespace Rocket.Libraries.Qurious
 {
-    using Rocket.Libraries.QBuilder;
+
     using Rocket.Libraries.Qurious.Builders;
     using Rocket.Libraries.Qurious.Builders.Paging;
     using Rocket.Libraries.Qurious.Models;

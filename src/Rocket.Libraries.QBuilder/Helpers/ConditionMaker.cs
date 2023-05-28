@@ -1,6 +1,6 @@
 ﻿namespace Rocket.Libraries.Qurious.Helpers
 {
-    using Rocket.Libraries.QBuilder;
+
     using Rocket.Libraries.Validation.Services;
     using System.Globalization;
 

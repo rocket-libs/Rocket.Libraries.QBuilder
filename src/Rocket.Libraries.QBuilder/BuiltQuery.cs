@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Rocket.Libraries.QBuilder
+namespace Rocket.Libraries.Qurious
 {
     public class BuiltQuery
     {
