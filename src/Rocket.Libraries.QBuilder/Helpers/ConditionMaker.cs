@@ -1,4 +1,5 @@
-﻿namespace Rocket.Libraries.Qurious.Helpers
+﻿using System;
+namespace Rocket.Libraries.Qurious.Helpers
 {
 
     using Rocket.Libraries.Validation.Services;
@@ -19,9 +20,28 @@
             }
             else
             {
+                conditionTemplate = conditionTemplate.Replace("'", string.Empty)
+                .Replace("%", string.Empty);
                 var parameterName = GetParameterName(field, builtQuery);
                 condition = $" {sqlOperator} {string.Format(CultureInfo.InvariantCulture, conditionTemplate, parameterName)}";
-                builtQuery.Parameters.Add(parameterName, value);
+
+                Func<string> getEffectiveValue = () =>
+                {
+                    value = value ?? string.Empty;
+                    switch (op)
+                    {
+                        case FilterOperator.StartsWith:
+                            return $"{value}%";
+                        case FilterOperator.Contains:
+                            return $"%{value}%";
+                        case FilterOperator.EndsWith:
+                            return $"%{value}";
+                        default:
+                            return value.ToString();
+                    }
+                };
+
+                builtQuery.Parameters.Add(parameterName, getEffectiveValue());
             }
             return condition;
         }
